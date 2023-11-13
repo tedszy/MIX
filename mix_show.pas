@@ -1,0 +1,127 @@
+{$mode objfpc}{$R+}{$H+}
+
+unit mix_show;
+
+interface
+
+uses
+   mix_machine, SysUtils;
+
+procedure ShowMIXCharTable;
+procedure ShowMIXSizes;
+procedure ShowMIXState;
+procedure ShowMIXMemory(StartAddress: integer; Rows: integer);
+
+implementation
+
+procedure ShowMIXCharTable;
+var
+   I: integer;
+begin
+   write(format('%-16s', ['MIX char table']));
+   for I := low(MIXCharTable) to high(MIXCharTable) do
+   begin
+      write(I,':',MIXCharTable[I],' ');
+      if I = 12 then
+      begin
+         writeln;
+         write(' ':16)
+      end;         
+   end;
+   writeln;
+end;
+
+procedure ShowMIXSizes;
+var
+   Width: integer = 25;
+   procedure print_info(n:integer; s:string);
+   begin
+      writeln(s, n:(Width-length(s)));
+   end;
+begin
+   writeln('MIX component', 'size':(width-13));
+   print_info(sizeof(MIXByte), 'MIX byte:');
+   print_info(MIXByteValues, 'MIX byte values:');
+   print_info(sizeof(MIXWord), 'MIX_word:');
+   print_info(sizeof(MIXRegister), 'MIX register:');
+   print_info(sizeof(MIXMemory), 'MIX memory:');
+   print_info(MIXMemoryWords, 'MIX memory words:');
+   print_info(sizeof(MIXOverflow), 'MIX overflow:');
+   print_info(sizeof(MIXComparison), 'MIX comparison:');
+   print_info(sizeof(MIXUnit), 'MIX peripheral unit:');
+end;
+
+procedure WriteWord(W: MIXWord);
+begin
+   write(format('[%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d]',
+                [W[0],W[1],W[2],W[3],W[4],W[5]])); 
+end;
+
+procedure ShowMIXState;
+var
+   TempString: string;
+begin
+   write(format('%5s: ', ['rA']));
+   WriteWord(rA);
+   writeln;
+   
+   write(format('%5s: ', ['rX']));
+   WriteWord(rX);
+   writeln;
+   
+   write(format('%5s: ', ['rI1']));
+   WriteWord(rI1);
+   writeln;
+   
+   write(format('%5s: ', ['rI2']));
+   WriteWord(rI2);
+   writeln;
+   
+   write(format('%5s: ', ['rI3']));
+   WriteWord(rI3);
+   writeln;
+   
+   write(format('%5s: ', ['rI4']));
+   WriteWord(rI4);
+   writeln;
+   
+   write(format('%5s: ', ['rI5']));
+   WriteWord(rI5);
+   writeln;
+   
+   write(format('%5s: ', ['rI6']));
+   WriteWord(rI6);
+   writeln;
+   
+   write(format('%5s: ', ['rJ']));
+   WriteWord(rJ);
+   writeln;
+   
+   writestr(TempString, OI);
+   writeln(format('%5s: %s', ['OI', TempString]));
+   writestr(TempString, CI);
+   writeln(format('%5s: %s', ['CI', TempString]));
+end;
+
+procedure ShowMIXMemory(StartAddress: integer; Rows: integer);
+var
+   I: integer;
+begin
+   for I := 0 to Rows - 1 do
+   begin
+      write(format('%5d: ', [StartAddress + 4*I]));
+      WriteWord(Memory[StartAddress + 4*I]);
+      write(' ');
+      WriteWord(Memory[StartAddress + 4*I + 1]);
+      write(' ');
+      WriteWord(Memory[StartAddress + 4*I + 2]);
+      write(' ');
+      WriteWord(Memory[StartAddress + 4*I + 3]);
+      writeln;
+   end;
+end;
+
+
+
+
+end.
