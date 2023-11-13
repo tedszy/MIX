@@ -22,7 +22,7 @@ begin
    for I := low(MIXCharTable) to high(MIXCharTable) do
    begin
       write(I,':',MIXCharTable[I],' ');
-      if I = 12 then
+      if ((I mod 12) = 0) and (I > 0) then
       begin
          writeln;
          write(' ':16)
