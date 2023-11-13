@@ -3,18 +3,10 @@
 program main;
 
 uses
-   mix_machine, mix_show; 
+   mix_machine, mix_show, mix_exec; 
 
 var
    TempWord: MIXWord;
-   
-procedure Poke(Address: integer; W: MIXWord);
-var
-   I: integer;
-begin
-   for I := 0 to 5 do
-      Memory[Address][I] := W[I];
-end;
    
 begin
    
