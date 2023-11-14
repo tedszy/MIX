@@ -5,6 +5,8 @@ program main;
 uses
    mix_machine, mix_show, mix_exec; 
 
+var
+   MyInstruction: MIXWord;
    
 begin
    
@@ -22,6 +24,14 @@ begin
 
    ShowMIXState;
    ShowMIXMemory(0,10);
+
+   MyInstruction := MakeMIXWord(0, 0, 0, 0, 0, 8);
+   Execute(MyInstruction);
+
+   MyInstruction := MakeMIXWord(0, 0, 0, 0, 0, 7);
+   Execute(MyInstruction);
+
+
    
 end.
 
