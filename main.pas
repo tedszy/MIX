@@ -5,8 +5,6 @@ program main;
 uses
    mix_machine, mix_show, mix_exec; 
 
-var
-   TempWord: MIXWord;
    
 begin
    
@@ -20,13 +18,7 @@ begin
    rA[4] := 4;
    rA[5] := 5;
 
-   TempWord[0] := 1;
-   TempWord[1] := 32;
-   TempWord[2] := 17;
-   Tempword[3] := 55;
-   TempWord[4] := 41;
-   TempWord[5] := 28;
-   Poke(0, TempWord);
+   Poke(0, MakeMIXWord(11,22,33,44,55,13));
 
    ShowMIXState;
    ShowMIXMemory(0,10);

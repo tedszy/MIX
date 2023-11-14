@@ -7,18 +7,23 @@ interface
 uses
    mix_machine;
 
-procedure Poke(Address: integer; W: MIXWord);
+procedure Execute(Instruction: MIXWord);
 
 implementation
 
-// Make this more powerful, with field specifier.
-procedure Poke(Address: integer; W: MIXWord);
-var
-   I: integer;
+
+
+procedure Execute(Instruction: MIXWord);
 begin
-   for I := 0 to 5 do
-      Memory[Address][I] := W[I];
+   case Instruction[5] of
+
+      8: writeln('LDA');
+
+   else
+      writeln('Instruction not implemented yet.');      
+   end;
 end;
+
 
 
 end.

@@ -14,7 +14,6 @@ type
    MIXUnit = (U0, U1, U2, U3, U4, U5, U6, U7, U8, U9,
               U10, U11, U12, U13, U14, U15, U16, U17,
               U18, U19);
-
          
 var
    MIXByteValues: byte = 64;
@@ -38,7 +37,10 @@ var
        '$', '<', '>', '@', ';', ':', '''');
 
 procedure InitMIX;
-   
+procedure Poke(Address: integer; W: MIXWord);
+function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
+                     w4: byte; w5: byte): MIXWord;
+
 implementation
 
 procedure InitMIX;
@@ -63,6 +65,26 @@ begin
    OI := OFF;
    CI := EQUAL; // For now!
 end;
+
+function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
+                     w4: byte; w5: byte): MIXWord;
+begin
+   MakeMIXWord[0] := w0;
+   MakeMIXWord[1] := w1;
+   MakeMIXWord[2] := w2;
+   MakeMIXWord[3] := w3;
+   MakeMIXWord[4] := w4;
+   MakeMIXWord[5] := w5;
+end;
+
+procedure Poke(Address: integer; W: MIXWord);
+var
+   I: integer;
+begin
+   for I := 0 to 5 do
+      Memory[Address][I] := W[I];
+end;
+
 
 
 end.
