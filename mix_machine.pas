@@ -16,7 +16,7 @@ type
               U18, U19);
          
 var
-   MIXByteValues: byte = 64;
+   MIXBase: byte = 64;
    MIXMemoryWords: integer = 4000;
    rA, rX: MIXRegister;
    rI: array[1..6] of MIXRegister;

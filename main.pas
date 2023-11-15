@@ -33,7 +33,7 @@ begin
    // Test LDA -------------
 
    InitMix;
-   Poke(2000, MakeMIXWord(1, 80 div MIXByteValues, 80 mod MIXByteValues, 3, 5, 4));
+   Poke(2000, MakeMIXWord(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4));
    MyField.Start := 0;
    MyField.Stop := 4;
    MyInstruction := MakeInstruction(8, 2000, 0, EncodeField(MyField)); 

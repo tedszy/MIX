@@ -56,7 +56,7 @@ var
 begin
    sign := Instruction[0];
    Assert((sign = 0) or (sign = 1), 'GetAddress: bad sign byte.');
-   Address := Instruction[1]*MIXByteValues + Instruction[2];
+   Address := Instruction[1]*MIXBase + Instruction[2];
    if Sign = 0 then
       GetAddress := Address
    else
@@ -119,7 +119,7 @@ begin
                   Sign := -1
                else
                   Sign := 1;
-               Address := Address + Sign*(rI[I_Index][4]*MIXByteValues +
+               Address := Address + Sign*(rI[I_Index][4]*MIXBase +
                                              rI[I_Index][5]);
             end;
             F_Field := DecodeField(F_Modifier);

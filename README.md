@@ -22,6 +22,10 @@ Rather than working with base-2 bits or hex or octal,
 we will simply store decimal numbers into our bytes
 and make sure no value in any byte is larger than 63.
 
+Another way to think of this is that a MIX byte is
+a digit of base-R, where 64 <= R <= 100. This is
+the point of view we will adopt.
+
 ### MIX Words
 
 Mix words fit perfectly into MIX main registers, and 

@@ -41,7 +41,7 @@ var
 begin
    writeln('MIX component', 'size':(width-13));
    print_info(sizeof(MIXByte), 'MIX byte:');
-   print_info(MIXByteValues, 'MIX byte values:');
+   print_info(MIXBase, 'MIX byte base:');
    print_info(sizeof(MIXWord), 'MIX_word:');
    print_info(sizeof(MIXRegister), 'MIX register:');
    print_info(sizeof(MIXMemory), 'MIX memory:');
