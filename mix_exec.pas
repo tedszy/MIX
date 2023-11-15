@@ -13,6 +13,10 @@ type
       stop: byte;
    end;
 
+
+function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
+                     w4: byte; w5: byte): MIXWord;
+
 function EncodeField(F: Field): MIXByte;
 function DecodeField(B: MIXByte): Field;
 
@@ -32,6 +36,18 @@ implementation
   [  +- A A  |  I  |  F  |  C  ] 
 
 }
+
+function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
+                     w4: byte; w5: byte): MIXWord;
+begin
+   MakeMIXWord[0] := w0;
+   MakeMIXWord[1] := w1;
+   MakeMIXWord[2] := w2;
+   MakeMIXWord[3] := w3;
+   MakeMIXWord[4] := w4;
+   MakeMIXWord[5] := w5;
+end;
+
 
 function GetAddress(Instruction: MIXWord): integer;
 var
@@ -76,42 +92,61 @@ begin
    MakeInstruction := MakeMIXWord(Sign, A1, A2, I_Index, F_Modifier, C_OpCode); 
 end;
 
-
-
-
 procedure Execute(Instruction: MIXWord);
 var
    C_OpCode: MIXByte; 
    F_Modifier: MIXByte;
    I_Index: MIXByte;
    Address: integer;
-   
+   F_Field: Field;
+   I: integer;
+   Sign: integer;
 begin
    C_OpCode := Instruction[5];
    F_Modifier := Instruction[4];
    I_Index := Instruction[3];
    Address := GetAddress(Instruction);
    case C_OpCode of
-
-
       
-      8: begin
-            writeln('LDA');
-            writeln('C:  ', C_OpCode);
-            writeln('F:  ', F_Modifier);
-            writeln('I:  ', I_Index);
-            writeln('+-AA: ', Address);
-            
-            
-         end;
-
-
-
+      8: begin // LDA
+            // Zero out rA.
+            ZeroRegister(rA);
+            // Add contents of index register to Address.
+            // Remember that index register has a sign.
+            if I_Index > 0 then
+            begin
+               if rI[I_Index][0] = 1 then
+                  Sign := -1
+               else
+                  Sign := 1;
+               Address := Address + Sign*(rI[I_Index][4]*MIXByteValues +
+                                             rI[I_Index][5]);
+            end;
+            F_Field := DecodeField(F_Modifier);
+            if F_Field.Start = 0 then
+            begin
+               rA[0] := Memory[Address][0];
+               for I := 1 to F_Field.Stop do
+                  rA[5 - F_Field.Stop + I] := Memory[Address][I];
+            end
+            else
+            begin
+               for I := F_Field.Start to F_Field.Stop do
+                  rA[5 - F_Field.Stop + I] := Memory[Address][I];
+            end;
+         end; // LDA
+   
+   
+      
+     
       
    else
       writeln('Instruction not implemented yet.');      
-   end;
-end;
+   end; // case
+
+
+   
+end; // procedure Execute
 
 
 

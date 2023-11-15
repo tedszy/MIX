@@ -19,7 +19,7 @@ var
    MIXByteValues: byte = 64;
    MIXMemoryWords: integer = 4000;
    rA, rX: MIXRegister;
-   rI1, rI2, rI3, rI4, rI5, rI6: MIXRegister;
+   rI: array[1..6] of MIXRegister;
    rJ: MIXRegister;
    OI: MIXOverflow;
    CI: MIXComparison;
@@ -37,9 +37,8 @@ var
        '$', '<', '>', '@', ';', ':', '''');
 
 procedure InitMIX;
+procedure ZeroRegister(var Reg: MIXRegister);   
 procedure Poke(Address: integer; W: MIXWord);
-function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
-                     w4: byte; w5: byte): MIXWord;
 
 implementation
 
@@ -51,13 +50,11 @@ begin
    begin
       rA[I] := 0;
       rX[I] := 0;
-      rI1[I] := 0;
-      rI2[I] := 0;
-      rI3[I] := 0;
-      rI4[I] := 0;
-      rI5[I] := 0;
-      rI6[I] := 0;
       rJ[I] := 0;
+      for J := 1 to 6 do
+      begin
+         rI[J][I] := 0;
+      end;
    end;
    for I := 0 to MIXMemoryWords - 1 do
       for J:= 0 to 5 do
@@ -66,17 +63,18 @@ begin
    CI := EQUAL; // For now!
 end;
 
-function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
-                     w4: byte; w5: byte): MIXWord;
+procedure ZeroRegister(var Reg: MIXRegister);
+var
+   I: integer;
 begin
-   MakeMIXWord[0] := w0;
-   MakeMIXWord[1] := w1;
-   MakeMIXWord[2] := w2;
-   MakeMIXWord[3] := w3;
-   MakeMIXWord[4] := w4;
-   MakeMIXWord[5] := w5;
+   for I := 0 to 5 do Reg[I] := 0;
 end;
 
+
+
+
+
+      
 procedure Poke(Address: integer; W: MIXWord);
 var
    I: integer;

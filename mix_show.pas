@@ -59,6 +59,7 @@ end;
 
 procedure ShowMIXState;
 var
+   I: integer;
    TempString: string;
 begin
    write(format('%5s: ', ['rA']));
@@ -68,30 +69,18 @@ begin
    write(format('%5s: ', ['rX']));
    WriteWord(rX);
    writeln;
-   
-   write(format('%5s: ', ['rI1']));
-   WriteWord(rI1);
-   writeln;
-   
-   write(format('%5s: ', ['rI2']));
-   WriteWord(rI2);
-   writeln;
-   
-   write(format('%5s: ', ['rI3']));
-   WriteWord(rI3);
-   writeln;
-   
-   write(format('%5s: ', ['rI4']));
-   WriteWord(rI4);
-   writeln;
-   
-   write(format('%5s: ', ['rI5']));
-   WriteWord(rI5);
-   writeln;
-   
-   write(format('%5s: ', ['rI6']));
-   WriteWord(rI6);
-   writeln;
+
+
+
+   for I := 1 to 6 do
+   begin
+      TempString := format('rI%d', [I]);
+      write(format('%5s: ', [TempString]));
+      WriteWord(rI[I]);
+      writeln;
+      
+   end;
+
    
    write(format('%5s: ', ['rJ']));
    WriteWord(rJ);
