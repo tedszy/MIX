@@ -8,7 +8,7 @@
 *.o
 *.ppu
 
-main
+test_setup
 test_instructions
 
 
