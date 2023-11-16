@@ -9,6 +9,12 @@ uses
 
 procedure ShowMIXCharTable;
 procedure ShowMIXSizes;
+function FormatWord(W: MIXWord): string;
+procedure WriteWord(W: MIXWord);
+procedure WriteRegister(RegLabel: string; Reg: MIXRegister);
+function FormatRegister(RegLabel: string; Reg: MIXRegister): string;
+procedure WriteMemoryCell(Address: integer);
+function FormatMemoryCell(Address: integer): string;
 procedure ShowMIXState;
 procedure ShowMIXMemory(StartAddress: integer; Rows: integer);
 
@@ -54,8 +60,44 @@ end;
 procedure WriteWord(W: MIXWord);
 begin
    write(format('[%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d]',
-                [W[0],W[1],W[2],W[3],W[4],W[5]])); 
+      [W[0],W[1],W[2],W[3],W[4],W[5]])); 
 end;
+
+function FormatWord(W: MIXWord): string;
+begin
+   FormatWord := format('[%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d]',
+      [W[0],W[1],W[2],W[3],W[4],W[5]]); 
+end;
+
+
+procedure WriteRegister(RegLabel: string; Reg: MIXRegister);
+begin
+   write(format('%5s: ', [RegLabel]));
+   WriteWord(Reg);
+end;
+
+function FormatRegister(RegLabel: string; Reg: MIXRegister): string;
+begin
+   FormatRegister := format('%5s: ', [RegLabel]) + formatWord(Reg);
+end;  
+
+
+procedure WriteMemoryCell(Address: integer);
+begin
+   write(format('%5d: ', [Address]));
+   WriteWord(Memory[Address]);
+end;
+
+function FormatMemoryCell(Address: integer): string;
+begin
+   FormatMemoryCell := format('%5d: ', [Address]) + 
+      formatWord(Memory[Address]);
+end;  
+
+
+
+
+
 
 procedure ShowMIXState;
 var

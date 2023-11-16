@@ -33,7 +33,13 @@ implementation
 
   Instruction layout:
 
-  [  +- A A  |  I  |  F  |  C  ] 
+  [  +-  A1  A2  I   F   C  ] 
+
+  Mnemonics layout:
+
+  OP ADDRESS,I(F)
+
+  C  (+- A1 A2)  I  F
 
 }
 
@@ -78,11 +84,11 @@ begin
 end;
 
 
-// OP ADDRESS,I(F)
+
 function MakeInstruction(C_Opcode: MIXByte;
-                         Address: integer;
-                         I_Index: MIXByte;
-                         F_Modifier: MIXByte): MIXWord;
+   Address: integer;
+   I_Index: MIXByte;
+   F_Modifier: MIXByte): MIXWord;
 var
    Sign, A1, A2: byte;
 begin
@@ -92,62 +98,94 @@ begin
    MakeInstruction := MakeMIXWord(Sign, A1, A2, I_Index, F_Modifier, C_OpCode); 
 end;
 
+
+
+
+{
+   Generalized load register, handles all cases,
+   including index registers, negation.
+
+   Address M, start, stop, negated, RegisterType, var register.
+}   
+
+procedure LoadRegister(Address: integer; 
+   F_Modifier: MIXByte;
+   Index: MIXByte;
+   Negated: boolean; 
+   RegType: RegisterType; 
+   var LoadReg: MIXRegister);
+var
+   F_Field: Field;
+   I, Sign: integer;
+begin
+   F_Field := DecodeField(F_Modifier);
+
+   { Add contents of index register to Address.
+   Remember that index register has a sign. }
+   if Index > 0 then
+   begin
+      if rI[Index][0] = 1 then
+         Sign := -1
+      else
+         Sign := 1;
+      Address := Address + Sign*(rI[Index][4]*MIXBase + rI[Index][5]);
+   end;
+
+   { check rest here... }
+
+   if F_Field.Start = 0 then
+   begin
+      LoadReg[0] := Memory[Address][0];
+      for I := 1 to F_Field.Stop do 
+         LoadReg[5 - F_Field.Stop + I] := Memory[Address][I]
+   end
+   else
+   begin
+      for I := F_Field.Start to F_Field.Stop do 
+         LoadReg[5 - F_Field.Stop + I] := Memory[Address][I];
+   end
+end;
+
+
+
+
 procedure Execute(Instruction: MIXWord);
 var
    C_OpCode: MIXByte; 
    F_Modifier: MIXByte;
    I_Index: MIXByte;
    Address: integer;
-   F_Field: Field;
-   I: integer;
-   Sign: integer;
 begin
    C_OpCode := Instruction[5];
    F_Modifier := Instruction[4];
    I_Index := Instruction[3];
    Address := GetAddress(Instruction);
+
    case C_OpCode of
-      
-      8: begin // LDA
-            // Zero out rA.
-            ZeroRegister(rA);
-            // Add contents of index register to Address.
-            // Remember that index register has a sign.
-            if I_Index > 0 then
-            begin
-               if rI[I_Index][0] = 1 then
-                  Sign := -1
-               else
-                  Sign := 1;
-               Address := Address + Sign*(rI[I_Index][4]*MIXBase +
-                                             rI[I_Index][5]);
-            end;
-            F_Field := DecodeField(F_Modifier);
-            if F_Field.Start = 0 then
-            begin
-               rA[0] := Memory[Address][0];
-               for I := 1 to F_Field.Stop do
-                  rA[5 - F_Field.Stop + I] := Memory[Address][I];
-            end
-            else
-            begin
-               for I := F_Field.Start to F_Field.Stop do
-                  rA[5 - F_Field.Stop + I] := Memory[Address][I];
-            end;
-         end; // LDA
-   
-   
-      
-     
-      
+
+   { LDA }
+   8: 
+   begin
+      ZeroRegister(rA);
+      LoadRegister(Address, F_Modifier, I_Index, False, WIDE_REG, rA);
+   end;  
+
+   { LDX }
+   15:
+   begin
+      ZeroRegister(rX);
+      LoadRegister(Address, F_Modifier, I_Index, False, WIDE_REG, rX);
+   end;
+
+
+
+
    else
       writeln('Instruction not implemented yet.');      
-   end; // case
+   end; 
 
 
-   
-end; // procedure Execute
 
-
+end;
 
 end.
