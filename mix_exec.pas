@@ -5,7 +5,7 @@ unit mix_exec;
 interface
 
 uses
-   mix_machine;
+   mix_machine, mix_show;
 
 type
    Field = record
@@ -98,9 +98,6 @@ begin
    MakeInstruction := MakeMIXWord(Sign, A1, A2, I_Index, F_Modifier, C_OpCode); 
 end;
 
-
-
-
 {
    Generalized load register, handles all cases,
    including index registers, negation.
@@ -120,6 +117,27 @@ var
 begin
    F_Field := DecodeField(F_Modifier);
 
+   { 
+      Some checks need to be done for the case of INDEX_REG type.
+      Stop - Start must be <= 3 and if it is 3, then the field 
+      it must contain the sign byte.
+
+      Also, a load operation cannot result in bytes 1, 2 or 3 of
+      an index register to end up being non-zero. So we will test
+      these with assertions.
+
+      The tests of zero bytes in positions 1, 2, 3 will come after
+      the load operations are done.
+   }
+
+   if RegType = INDEX_REG then 
+      assert(F_Field.Stop - F_Field.Start <= 3, 
+         'LoadRegister: Field modifier too wide for index register.');
+
+   if (RegType = INDEX_REG) and (F_Field.Stop - F_Field.Start = 3) then
+      assert(F_Field.Start = 0, 
+         'LoadRegiser: field of length 3 must include sign byte.');
+
    { Add contents of index register to Address.
    Remember that index register has a sign. }
    if Index > 0 then
@@ -131,8 +149,6 @@ begin
       Address := Address + Sign*(rI[Index][4]*MIXBase + rI[Index][5]);
    end;
 
-   { check rest here... }
-
    if F_Field.Start = 0 then
    begin
       LoadReg[0] := Memory[Address][0];
@@ -140,10 +156,15 @@ begin
          LoadReg[5 - F_Field.Stop + I] := Memory[Address][I]
    end
    else
-   begin
       for I := F_Field.Start to F_Field.Stop do 
          LoadReg[5 - F_Field.Stop + I] := Memory[Address][I];
-   end
+
+   { If index register, make sure bytes 1, 2, 3 are undisturbed. }
+
+   if RegType = INDEX_REG then 
+      assert((LoadReg[1] = 0) and 
+         (LoadReg[2] = 0) and (LoadReg[3] = 0),
+         'LoadRegister: index register bytes 1, 2, 3 must be 0');
 end;
 
 
@@ -177,7 +198,12 @@ begin
       LoadRegister(Address, F_Modifier, I_Index, False, WIDE_REG, rX);
    end;
 
-
+   { LDi load index registers}
+   (8+1)..(8+6):
+   begin 
+      ZeroRegister(rI[C_OpCode - 8]);
+      LoadRegister(Address, F_Modifier, I_Index, False, INDEX_REG, rI[C_OpCode - 8]);
+   end;
 
 
    else

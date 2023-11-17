@@ -58,6 +58,28 @@ begin
    writeln;
 end;  
 
+procedure LDi_test(TestName: string; Start: byte; Stop: byte);
+var
+   MyInstruction: MIXWord;
+   MyField: Field;
+begin
+   InitMIX;
+   Poke(2000, MakeMIXWord(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4));
+   MyField.Start := Start;
+   MyField.Stop := Stop;
+   MyInstruction := MakeInstruction(8 + 3, 2000, 0, EncodeField(MyField)); 
+   Execute(MyInstruction);
+   write(TestName:WW[1]);
+   write(FormatWord(MyInstruction):WW[2]);
+   write(FormatMemoryCell(2000):WW[3]);
+   write(FormatRegister('rI3', rI[3]):WW[4]);
+   writeln;
+end;  
+
+
+
+
+
 
 begin
    Test_header;
@@ -66,13 +88,29 @@ begin
    LDA_test('LDA 3', 0, 3);
    LDA_test('LDA 4', 0, 0);
    LDA_test('LDA 5', 1, 1);
+
    writeln;   
+
    LDX_test('LDX 1', 0, 5);
    LDX_test('LDX 2', 1, 5);
    LDX_test('LDX 3', 0, 3);
    LDX_test('LDX 4', 0, 0);
    LDX_test('LDX 5', 1, 1);
 
+   writeln;
 
+   LDi_test('LD3 1', 0, 2);
+   LDi_test('LD3 2', 4, 5);
+   LDi_test('LD3 3', 0, 0);
+   LDi_test('LD3 4', 1, 2);
+   LDi_test('LD3 5', 0, 1);
+
+
+
+   ShowMIXState;
+   ShowMIXMemory(2000,2);
 end.
+
+
+
 
