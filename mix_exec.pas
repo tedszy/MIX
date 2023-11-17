@@ -165,6 +165,14 @@ begin
       assert((LoadReg[1] = 0) and 
          (LoadReg[2] = 0) and (LoadReg[3] = 0),
          'LoadRegister: index register bytes 1, 2, 3 must be 0');
+
+   { We have to assume that negation here means negating even
+     when the sign byte has not been loaded (i.e., default +). }
+
+   if Negated then
+      if LoadReg[0] = 0 then LoadReg[0] := 1 else LoadReg[0] := 0;
+
+
 end;
 
 
@@ -204,6 +212,30 @@ begin
       ZeroRegister(rI[C_OpCode - 8]);
       LoadRegister(Address, F_Modifier, I_Index, False, INDEX_REG, rI[C_OpCode - 8]);
    end;
+
+   { LDAN }
+   16:
+   begin 
+      ZeroRegister(rA);
+      LoadRegister(Address, F_Modifier, I_Index, True, WIDE_REG, rA);
+   end;  
+
+   { LDXN }
+   23:
+   begin
+      ZeroRegister(rX);
+      LoadRegister(Address, F_Modifier, I_Index, True, WIDE_REG, rX);
+   end;
+
+   { LDiN load index registers}
+   (16+1)..(16+6):
+   begin
+      ZeroRegister(rX);
+      LoadRegister(Address, F_Modifier, I_Index, True, INDEX_REG, rI[C_OpCode - 16]);
+   end;
+
+
+
 
 
    else

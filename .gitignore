@@ -9,7 +9,7 @@
 *.ppu
 
 test_setup
-test_instructions
+test_load
 
 
 

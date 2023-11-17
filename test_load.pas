@@ -40,6 +40,24 @@ begin
    writeln;
 end;  
 
+procedure LDAN_test(TestName: string; Start: byte; Stop: byte);
+var
+   MyInstruction: MIXWord;
+   MyField: Field;
+begin
+   InitMIX;
+   Poke(2000, MakeMIXWord(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4));
+   MyField.Start := Start;
+   MyField.Stop := Stop;
+   MyInstruction := MakeInstruction(16, 2000, 0, EncodeField(MyField)); 
+   Execute(MyInstruction);
+   write(TestName:WW[1]);
+   write(FormatWord(MyInstruction):WW[2]);
+   write(FormatMemoryCell(2000):WW[3]);
+   write(FormatRegister('rA', rA):WW[4]);
+   writeln;
+end;  
+
 procedure LDX_test(TestName: string; Start: byte; Stop: byte);
 var
    MyInstruction: MIXWord;
@@ -50,6 +68,24 @@ begin
    MyField.Start := Start;
    MyField.Stop := Stop;
    MyInstruction := MakeInstruction(15, 2000, 0, EncodeField(MyField)); 
+   Execute(MyInstruction);
+   write(TestName:WW[1]);
+   write(FormatWord(MyInstruction):WW[2]);
+   write(FormatMemoryCell(2000):WW[3]);
+   write(FormatRegister('rX', rX):WW[4]);
+   writeln;
+end;  
+
+procedure LDXN_test(TestName: string; Start: byte; Stop: byte);
+var
+   MyInstruction: MIXWord;
+   MyField: Field;
+begin
+   InitMIX;
+   Poke(2000, MakeMIXWord(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4));
+   MyField.Start := Start;
+   MyField.Stop := Stop;
+   MyInstruction := MakeInstruction(23, 2000, 0, EncodeField(MyField)); 
    Execute(MyInstruction);
    write(TestName:WW[1]);
    write(FormatWord(MyInstruction):WW[2]);
@@ -76,7 +112,23 @@ begin
    writeln;
 end;  
 
-
+procedure LDiN_test(TestName: string; Start: byte; Stop: byte);
+var
+   MyInstruction: MIXWord;
+   MyField: Field;
+begin
+   InitMIX;
+   Poke(2000, MakeMIXWord(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4));
+   MyField.Start := Start;
+   MyField.Stop := Stop;
+   MyInstruction := MakeInstruction(16 + 3, 2000, 0, EncodeField(MyField)); 
+   Execute(MyInstruction);
+   write(TestName:WW[1]);
+   write(FormatWord(MyInstruction):WW[2]);
+   write(FormatMemoryCell(2000):WW[3]);
+   write(FormatRegister('rI3', rI[3]):WW[4]);
+   writeln;
+end;  
 
 
 
@@ -105,6 +157,23 @@ begin
    LDi_test('LD3 4', 1, 2);
    LDi_test('LD3 5', 0, 1);
 
+   writeln;
+
+   LDAN_test('LDAN 1', 0, 5);
+   LDAN_test('LDAN 2', 1, 5);
+
+   writeln;
+
+   LDXN_test('LDXN 1', 0, 5);
+   LDXN_test('LDXN 2', 1, 5);
+
+   writeln;
+
+   LDiN_test('LD3N 1', 0, 2);
+   LDiN_test('LD3N 2', 4, 5);
+   LDiN_test('LD3N 3', 0, 0);
+   LDiN_test('LD3N 4', 1, 2);
+   LDiN_test('LD3N 5', 0, 1);
 
 
    ShowMIXState;
