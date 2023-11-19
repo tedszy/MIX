@@ -18,9 +18,7 @@ begin
    MyWord2 := TMIXWord.CreateFromBytes(0,1,2,3,4,95);
    Goo := TMIXRegister.Create('rA');
 
-   writeln(F.Byteval[0]);
-   writeln(F.Byteval[1]);
-   writeln(F.Byteval[2]);
+   writeln(FormatField(F));
    
    Goo.SetField(3, F);
 

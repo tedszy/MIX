@@ -25,7 +25,6 @@ type
       ByteVal: array[0..5] of TMIXByte;
    end;
 
-//   TMIXField = array of TMIXByte;
 
    TMIXWord = class
    private
@@ -37,10 +36,18 @@ type
       function GetField(Start, Stop: integer): TMIXField;
       procedure SetField(Start: integer; F: TMIXField);
       
+
+
+
+
       { To do. }
 
       // procedure LoadLeft(F: TMIXField);
       // procedure LoadRight(F: TMIXField);
+
+
+
+
 
       function ToString: string; override;
       function Check: boolean; virtual;
@@ -59,7 +66,19 @@ type
    { index register, jump register, memory system }
 
 
+
+
+
+function FormatField(F: TMIXField): string;
+
 implementation
+
+function FormatField(F: TMIXField): string;
+begin
+   FormatField := format('%d: (%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d)', 
+      [F.Size, F.ByteVal[0], F.ByteVal[1], F.ByteVal[2], F.ByteVal[3], 
+       F.ByteVal[4], F.ByteVal[5]]); 
+end;
 
 {
    TMIXWord...
@@ -138,7 +157,9 @@ end;
 
 function TMIXRegister.Check: boolean;
 begin
-   { Sanity check: no byte can be >= MIXBase  }
+   { Sanity check: no byte can be >= MIXBase, 
+     while for registers, the sign byte (byte 0)
+     must be either 0 or 1. }
    Check := (ByteVal[0] = 0) or (ByteVal[0] = 1);
    Check := Check and (inherited Check);
 end;
