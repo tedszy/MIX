@@ -8,7 +8,7 @@ type
    MIXByte = byte;
    MIXWord = array[0..5] of MIXByte;
    MIXRegister = array[0..5] of MIXByte;
-   RegisterType = (INDEX_REG, WIDE_REG);
+   RegisterType = (INDEX_REG, JUMP_REG, WIDE_REG);
    MIXMemory = array[0..3999] of MIXWord;
    MIXOverflow = (ON, OFF);
    MIXComparison = (LESS, EQUAL, GREATER);

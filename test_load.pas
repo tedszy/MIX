@@ -1,13 +1,10 @@
 {$mode objfpc}{$R+}{$H+}{$ASSERTIONS ON}
 
-(*
+{
+   Test load instructios using examples in Knuth's book.
+}
 
-  Test our machine instructions using
-  the examples from Knuth's book.
-
-*)
-
-program test_instructions;
+program test_load;
 
 uses
    mix_machine, mix_show, mix_exec, SysUtils, StrUtils; 
@@ -130,9 +127,6 @@ begin
    writeln;
 end;  
 
-
-
-
 begin
    Test_header;
    LDA_test('LDA 1', 0, 5);
@@ -174,7 +168,6 @@ begin
    LDiN_test('LD3N 3', 0, 0);
    LDiN_test('LD3N 4', 1, 2);
    LDiN_test('LD3N 5', 0, 1);
-
 
    ShowMIXState;
    ShowMIXMemory(2000,2);

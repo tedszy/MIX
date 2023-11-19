@@ -13,7 +13,6 @@ type
       stop: byte;
    end;
 
-
 function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
                      w4: byte; w5: byte): MIXWord;
 
@@ -30,17 +29,11 @@ procedure Execute(Instruction: MIXWord);
 implementation
 
 { 
-
-  Instruction layout:
-
-  [  +-  A1  A2  I   F   C  ] 
-
-  Mnemonics layout:
-
-  OP ADDRESS,I(F)
-
-  C  (+- A1 A2)  I  F
-
+   Instruction layout:
+   [  +-  A1  A2  I   F   C  ] 
+   Mnemonics layout:
+   OP ADDRESS,I(F)
+   C  (+- A1 A2)  I  F
 }
 
 function MakeMIXWord(w0: byte; w1: byte; w2: byte; w3: byte;
@@ -53,7 +46,6 @@ begin
    MakeMIXWord[4] := w4;
    MakeMIXWord[5] := w5;
 end;
-
 
 function GetAddress(Instruction: MIXWord): integer;
 var
@@ -82,8 +74,6 @@ begin
    F.Stop := B mod 8;
    DecodeField := F;
 end;
-
-
 
 function MakeInstruction(C_Opcode: MIXByte;
    Address: integer;
@@ -139,7 +129,8 @@ begin
          'LoadRegiser: field of length 3 must include sign byte.');
 
    { Add contents of index register to Address.
-   Remember that index register has a sign. }
+      Remember that index register has a sign. }
+
    if Index > 0 then
    begin
       if rI[Index][0] = 1 then
@@ -172,11 +163,11 @@ begin
    if Negated then
       if LoadReg[0] = 0 then LoadReg[0] := 1 else LoadReg[0] := 0;
 
-
 end;
 
-
-
+{
+   ---------- EXECUTE instruction ----------
+}
 
 procedure Execute(Instruction: MIXWord);
 var
@@ -234,9 +225,22 @@ begin
       LoadRegister(Address, F_Modifier, I_Index, True, INDEX_REG, rI[C_OpCode - 16]);
    end;
 
+   { STA }
+   24:
+   begin
+      { We do not zero the contents of rA }    
+
+   end;  
 
 
 
+
+
+
+
+   {
+      Another 120 instructions to go ...
+   }
 
    else
       writeln('Instruction not implemented yet.');      
