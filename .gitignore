@@ -11,8 +11,7 @@
 test_setup
 test_load
 test_store
-oop_test
-
+test_mix
 test_store.pas
 
 

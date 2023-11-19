@@ -1,6 +1,6 @@
 {$mode objfpc}{$R+}{$H+}
 
-unit mix_word;
+unit mix;
 
 interface
 
@@ -8,23 +8,11 @@ uses
    SySUtils;
 
 const
-
-   { 84 <= MIXBase <= 100. } 
-
-   MIXBase: byte = 64;
+   MIXBase: byte = 64;           { 84 <= MIXBase <= 100. } 
+   MIXMemoryCells = 4000;        { Total words of memory. }
 
 type 
    TMIXByte = byte;
-
-   { A MIX field can be more efficiently and easily represented 
-     by a simple static array and a size. The field bytes are stored
-     in array elements 0 thru size-1. }
-
-   TMIXField = record
-      size: integer;
-      ByteVal: array[0..5] of TMIXByte;
-   end;
-
 
    TMIXWord = class
    private
@@ -32,23 +20,7 @@ type
    public   
       procedure Clear;
       constructor Create;
-      constructor CreateFromBytes(a,b,c,d,e,f: TMIXByte);
-      function GetField(Start, Stop: integer): TMIXField;
-      procedure SetField(Start: integer; F: TMIXField);
-      
-
-
-
-
-      { To do. }
-
-      // procedure LoadLeft(F: TMIXField);
-      // procedure LoadRight(F: TMIXField);
-
-
-
-
-
+      constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte);
       function ToString: string; override;
       function Check: boolean; virtual;
    end;  
@@ -59,6 +31,7 @@ type
    public
       constructor Create(Mnem: string);
       function ToString: string; override;
+      procedure Load(W: TMIXWord; Start, Stop: integer); 
       function Check: boolean; override;
    end;  
 
@@ -69,16 +42,7 @@ type
 
 
 
-function FormatField(F: TMIXField): string;
-
 implementation
-
-function FormatField(F: TMIXField): string;
-begin
-   FormatField := format('%d: (%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d)', 
-      [F.Size, F.ByteVal[0], F.ByteVal[1], F.ByteVal[2], F.ByteVal[3], 
-       F.ByteVal[4], F.ByteVal[5]]); 
-end;
 
 {
    TMIXWord...
@@ -106,28 +70,6 @@ begin
    ByteVal[4] := e;
    ByteVal[5] := f;
 end;  
-
-function TMIXWord.GetField(Start, Stop: integer): TMIXField;
-var 
-   I: integer;
-begin
-   GetField.size := Stop - Start + 1;
-   for I := Start to Stop do
-      GetField.ByteVal[I - Start] := ByteVal[I];
-end;
-
-procedure TMIXWord.SetField(Start: integer; F: TMIXField);
-var
-   I: integer;
-begin
-   { Put the bytes of F into the Register, starting at position Start. 
-     This is a general purpose way of setting some field IN THE REGISTER
-     with some bytes of a given field record. LoadLeft and LoadRight
-     are more specific operations of this sort. }
-   assert(start + F.size <= 5, 'SetField: given F is too wide.');
-   for I := Start to Start + F.size - 1 do
-      ByteVal[I] := F.ByteVal[I - Start];
-end;
 
 function TMIXWord.ToString: string;
 begin
@@ -164,10 +106,30 @@ begin
    Check := Check and (inherited Check);
 end;
 
+procedure TMIXRegister.Load(W: TMIXWord; Start, Stop: integer);
+var
+   I: integer;
+begin
+   Clear;
+   if Start = 0 then
+   begin
+      ByteVal[0] := W.ByteVal[0];
+      for I := 1 to Stop do 
+         ByteVal[5 - Stop + I] := W.ByteVal[I]
+   end
+   else
+      for I := Start to Stop do 
+         ByteVal[5 - Stop + I] := W.ByteVal[I];
+end;
+
 function TMIXRegister.ToString: string;
 begin
    ToString :=  Mnemonic + ': ' + (inherited ToString);
 end;
+
+
+
+
 
 
 end.
