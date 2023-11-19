@@ -10,6 +10,7 @@ var
    MyWord2: TMIXWord;
    I: integer;
    Goo: TMIXRegister;
+   Knuth: TMIX;
 
 begin
    MyWord := TMIXWord.Create;
@@ -35,12 +36,22 @@ begin
    writeln(Goo.ToString);
    writeln;
 
+   writeln('---- MIX ----');
+
+   Knuth := TMIX.Create;
+   Knuth.Show(0, 10);
+
+
+
+
+
 
 
 
    MyWord.Free;
    MyWord2.Free;
    Goo.Free;
+   Knuth.Free;
 end.
 
 
