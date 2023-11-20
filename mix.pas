@@ -75,7 +75,7 @@ type
    public
       constructor Create;
       // use default arg vals for Show()...
-      procedure Show(Address, rows: integer);
+      procedure Show(Address: integer = 0; rows: integer = 5);
       procedure Reboot;
       function Peek(Address: integer): TMIXWord; 
       procedure PokeWord(W: TMIXWord; Address: integer);
@@ -236,8 +236,6 @@ begin
       Cell[I] := TMIXWord.Create;
 end;
 
-
-
 procedure TMIXMemory.Show(Address, Rows: integer);
 var
    I: integer;
@@ -293,12 +291,7 @@ begin
    Memory.Show(Address, Rows);
 
 
-   {
-   writestr(TempString, OI);
-   writeln(format('%5s: %s', ['OI', TempString]));
-   writestr(TempString, CI);
-   writeln(format('%5s: %s', ['CI', TempString]));
-   }
+   { to do ... }
 
 end;
 

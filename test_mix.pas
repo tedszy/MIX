@@ -45,7 +45,7 @@ begin
    Knuth.PokeWord(MyWord2, 2);
    writeln((Knuth.Peek(2)).ToString);
 
-   Knuth.Show(0, 10);
+   Knuth.Show;
 
 
 
