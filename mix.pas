@@ -64,7 +64,7 @@ type
       procedure PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
 
       // Need a destructor to free all the cells.
-
+      destructor Destroy; override;
    end;
 
    { The MIX machine class. }
@@ -82,10 +82,9 @@ type
       constructor Create;
       // use default arg vals for Show()...
       procedure Show(Address, rows: integer);
-
-      // Write destructor...
-
+      destructor Destroy; override;
    end;  
+
 
 implementation
 
@@ -276,6 +275,14 @@ begin
    end;
 end;
 
+destructor TMIXMemory.Destroy;
+var
+   I: integer;
+begin
+   for I := 0 to MIXMemoryCells - 1 do Cell[I].Free;
+   inherited;
+end;
+
 { TMIX... }
 
 constructor TMIX.Create;
@@ -294,7 +301,6 @@ end;
 procedure TMIX.Show(Address, Rows: integer);
 var 
    I: integer;
-   TempStr: string;
 begin
    { Show the internal state in a nice layout. }
    writeln(rA.ToString);
@@ -310,6 +316,7 @@ begin
 
 
 
+
    {
    writestr(TempString, OI);
    writeln(format('%5s: %s', ['OI', TempString]));
@@ -317,10 +324,19 @@ begin
    writeln(format('%5s: %s', ['CI', TempString]));
    }
 
-
-
 end;
 
+destructor TMIX.Destroy;
+var
+   I: integer;
+begin
+   Memory.Free;
+   rA.Free;
+   rX.Free;
+   for I := 1 to 6 do rI[I].Free;
+   rJ.Free;
+   inherited;
+end;
 
 
 
