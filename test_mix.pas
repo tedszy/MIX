@@ -39,6 +39,12 @@ begin
    writeln('---- MIX ----');
 
    Knuth := TMIX.Create;
+
+   writeln('test peek, poke');
+   Knuth.PokeBytes(6,5,4,3,2,1, 3);
+   Knuth.PokeWord(MyWord2, 2);
+   writeln((Knuth.Peek(2)).ToString);
+
    Knuth.Show(0, 10);
 
 

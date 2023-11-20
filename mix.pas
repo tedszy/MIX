@@ -17,9 +17,8 @@ type
    TMIXComparisonIndicator = (LESS, EQUAL, GREATER);
 
    TMIXWord = class
-   private
-      ByteVal: array[0..5] of TMIXByte; 
    public   
+      ByteVal: array[0..5] of TMIXByte; 
       procedure Clear;
       constructor Create;
       constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte);
@@ -59,11 +58,6 @@ type
    public
       constructor Create;
       procedure Show(Address, Rows: integer);
-      function Peek(Address: integer): TMIXWord; 
-      procedure PokeWord(W: TMIXWord; Address: integer);
-      procedure PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
-
-      // Need a destructor to free all the cells.
       destructor Destroy; override;
    end;
 
@@ -82,9 +76,12 @@ type
       constructor Create;
       // use default arg vals for Show()...
       procedure Show(Address, rows: integer);
+      procedure Reboot;
+      function Peek(Address: integer): TMIXWord; 
+      procedure PokeWord(W: TMIXWord; Address: integer);
+      procedure PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
       destructor Destroy; override;
    end;  
-
 
 implementation
 
@@ -226,7 +223,7 @@ end;
 
 function TMIXJumpRegister.Check: boolean;
 begin
-
+   Check := true;
 end;
 
 { TMIXMemory... }
@@ -238,22 +235,6 @@ begin
    for I := 0 to MIXMemoryCells - 1 do
       Cell[I] := TMIXWord.Create;
 end;
-
-
-
-
-function TMIXMemory.Peek(Address: integer): TMIXWord; 
-begin
-end;
-      
-procedure TMIXMemory.PokeWord(W: TMIXWord; Address: integer);
-begin
-end;
-
-procedure TMIXMemory.PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
-begin
-end;
-
 
 
 
@@ -312,11 +293,6 @@ begin
    Memory.Show(Address, Rows);
 
 
-
-
-
-
-
    {
    writestr(TempString, OI);
    writeln(format('%5s: %s', ['OI', TempString]));
@@ -324,6 +300,36 @@ begin
    writeln(format('%5s: %s', ['CI', TempString]));
    }
 
+end;
+
+procedure TMIX.Reboot;
+begin
+end; 
+
+function TMIX.Peek(Address: integer): TMIXWord; 
+var
+   I: integer;
+begin
+   //Peek := Memory.Cell[Address];
+   Peek := TMIXWord.Create;
+   for I := 0 to 5 do Peek.ByteVal[I] := Memory.Cell[Address].ByteVal[I];
+end;
+      
+procedure TMIX.PokeWord(W: TMIXWord; Address: integer);
+var 
+   I: integer;
+begin
+   for I := 0 to 5 do Memory.Cell[Address].ByteVal[I] := W.ByteVal[I];
+end;
+
+procedure TMIX.PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
+begin
+   Memory.Cell[Address].ByteVal[0] := a;
+   Memory.Cell[Address].ByteVal[1] := b;
+   Memory.Cell[Address].ByteVal[2] := c;
+   Memory.Cell[Address].ByteVal[3] := d;
+   Memory.Cell[Address].ByteVal[4] := e;
+   Memory.Cell[Address].ByteVal[5] := f;
 end;
 
 destructor TMIX.Destroy;
