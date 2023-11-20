@@ -209,9 +209,9 @@ function TMIXIndexRegister.Check: boolean;
 begin
    { Same checks apply like TMIXRegister except bytes 1, 2, 3 must be zero. }
    Check := inherited Check;
-   Check := (ByteVal[1] = 0) and
-            (ByteVal[2] = 0) and
-            (ByteVal[3] = 0);
+   Check := Check and ((ByteVal[1] = 0) and
+                       (ByteVal[2] = 0) and
+                       (ByteVal[3] = 0));
 end;
 
 { TMIXJumpRegister... }
