@@ -47,7 +47,9 @@ begin
 
    Knuth.Show;
 
+   Knuth.Reboot;
 
+   Knuth.show;
 
 
 

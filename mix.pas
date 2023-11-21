@@ -256,8 +256,10 @@ begin
 end;
 
 procedure TMIXMemory.Clear;
+var
+   I: integer;
 begin
-
+   for I := 0 to MIXMemoryCells - 1 do Cell[I].Clear;
 end;
 
 destructor TMIXMemory.Destroy;
@@ -314,7 +316,16 @@ begin
 end;
 
 procedure TMIX.Reboot;
+var 
+   I: integer;
 begin
+   rA.Clear;
+   rX.Clear;
+   for I := 1 to 6 do rI[I].Clear;
+   rJ.Clear;
+   OT := OFF;
+   CI := EQUAL;
+   Memory.Clear;
 end; 
 
 function TMIX.Peek(Address: integer): TMIXWord; 
