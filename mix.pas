@@ -58,6 +58,7 @@ type
    public
       constructor Create;
       procedure Show(Address, Rows: integer);
+      procedure Clear;
       destructor Destroy; override;
    end;
 
@@ -254,6 +255,11 @@ begin
    end;
 end;
 
+procedure TMIXMemory.Clear;
+begin
+
+end;
+
 destructor TMIXMemory.Destroy;
 var
    I: integer;
@@ -277,22 +283,34 @@ begin
    CI := EQUAL;
 end;
 
-procedure TMIX.Show(Address, Rows: integer);
+procedure TMIX.Show(Address: integer; Rows: integer);
 var 
-   I: integer;
+   RegWidth: integer = 25;
 begin
    { Show the internal state in a nice layout. }
-   writeln(rA.ToString);
-   writeln(rX.ToString);
-   for I := 1 to 6 do writeln(rI[I].ToString);
-   writeln(rJ.ToString);
-   writeln(OT);
-   writeln(CI);
+   writeln;
+   writeln('---------- MIX ----------':50);
+   writeln;
+   write(rA.ToString:RegWidth);
+   write(rX.ToString:RegWidth);
+   writeln;
+   writeln;
+   write(rI[1].ToString:RegWidth);
+   write(rI[2].ToString:RegWidth);
+   write(rI[3].ToString:RegWidth);
+   writeln;
+   write(rI[4].ToString:RegWidth);
+   write(rI[5].ToString:RegWidth);
+   write(rI[6].ToString:RegWidth);
+   writeln;
+   writeln;
+   write(rJ.ToString:RegWidth);
+   write('OT: ':10, OT);
+   write('CI: ':10, CI);
+   writeln;
+   writeln;
    Memory.Show(Address, Rows);
-
-
-   { to do ... }
-
+   writeln
 end;
 
 procedure TMIX.Reboot;
