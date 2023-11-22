@@ -186,7 +186,7 @@ begin
    { LDA }
    8: 
    begin
-      ZeroRegister(rA);
+   ZeroRegister(rA);
       LoadRegister(Address, F_Modifier, I_Index, False, WIDE_REG, rA);
    end;  
 

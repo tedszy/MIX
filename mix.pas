@@ -1,4 +1,4 @@
-{$mode objfpc}{$R+}{$H+}
+{$mode objfpc}{$R+}{$H+}{$ASSERTIONS+}
 
 unit mix;
 
@@ -62,6 +62,18 @@ type
       destructor Destroy; override;
    end;
 
+   { MIX executable instruction. }
+
+   TMIXInstruction = class
+   public
+      OpCode: integer;
+      Modifier: integer;
+      Index: integer;
+      Address: integer;
+      constructor Create(W: TMIXWord);
+      destructor Destroy; override;
+   end;
+
    { The MIX machine class. }
 
    TMIX = class
@@ -75,12 +87,12 @@ type
       CI: TMIXComparisonIndicator;
    public
       constructor Create;
-      // use default arg vals for Show()...
       procedure Show(Address: integer = 0; rows: integer = 5);
       procedure Reboot;
       function Peek(Address: integer): TMIXWord; 
       procedure PokeWord(W: TMIXWord; Address: integer);
       procedure PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
+      procedure Execute(Instruction: TMIXWord);
       destructor Destroy; override;
    end;  
 
@@ -224,6 +236,9 @@ end;
 
 function TMIXJumpRegister.Check: boolean;
 begin
+   
+   { To do... }
+
    Check := true;
 end;
 
@@ -267,6 +282,45 @@ var
    I: integer;
 begin
    for I := 0 to MIXMemoryCells - 1 do Cell[I].Free;
+   inherited;
+end;
+
+{ TMIXInstruction... }
+
+constructor TMIXInstruction.Create(W: TMIXWord);
+var
+   Sign: byte;
+begin
+   
+   {
+      We deconstruct MIX words to create instructions.
+      A MIX instruction has the following structure...
+
+      0    1    2    3    4     5
+      +-   A    A    I    F     C
+   
+      The bytes break down to...
+
+      C = opcode
+      F = modifier
+      I = index
+      (+-AA) = combined 3 bytes = Address
+
+      We leave it to other procedures to interpret the meaning
+      of index and modifier for particular opcodes.
+   }
+  
+   OpCode := W.ByteVal[5];
+   Modifier := W.ByteVal[4];
+   Index := W.ByteVal[3];
+   Address := W.ByteVal[1]*MIXBase + W.ByteVal[2];
+   Sign := W.ByteVal[0];
+   Assert((Sign = 0) or (Sign = 1), 'TMIXInstruction.Create:: bad sign byte.');
+   if Sign = 1 then Address := -Address;
+end;
+
+destructor TMIXInstruction.Destroy;
+begin
    inherited;
 end;
 
@@ -353,6 +407,22 @@ begin
    Memory.Cell[Address].ByteVal[4] := e;
    Memory.Cell[Address].ByteVal[5] := f;
 end;
+
+
+
+
+
+procedure TMIX.Execute(Instruction: TMIXWord);
+begin
+
+end;  
+
+
+
+
+
+
+
 
 destructor TMIX.Destroy;
 var
