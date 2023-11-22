@@ -92,7 +92,8 @@ type
       function Peek(Address: integer): TMIXWord; 
       procedure PokeWord(W: TMIXWord; Address: integer);
       procedure PokeBytes(a, b, c, d, e, f: TMIXByte; Address: integer);
-      procedure Execute(Instruction: TMIXWord);
+      function GetIndexedAddress(Instruction: TMIXInstruction): integer;
+      procedure Execute(Instruction: TMIXInstruction);
       destructor Destroy; override;
    end;  
 
@@ -291,7 +292,6 @@ constructor TMIXInstruction.Create(W: TMIXWord);
 var
    Sign: byte;
 begin
-   
    {
       We deconstruct MIX words to create instructions.
       A MIX instruction has the following structure...
@@ -309,7 +309,6 @@ begin
       We leave it to other procedures to interpret the meaning
       of index and modifier for particular opcodes.
    }
-  
    OpCode := W.ByteVal[5];
    Modifier := W.ByteVal[4];
    Index := W.ByteVal[3];
@@ -408,12 +407,54 @@ begin
    Memory.Cell[Address].ByteVal[5] := f;
 end;
 
-
-
-
-
-procedure TMIX.Execute(Instruction: TMIXWord);
+function TMIX.GetIndexedAddress(Instruction: TMIXInstruction): integer;
+var
+   Sign: integer;
 begin
+   {
+      If the index byte of the instruction is nonzero,
+      then we have to decode the numerical offset in the 
+      corresponding index register and add it to the address 
+      part of the instruction. This gives us the "real" address
+      which Knuth denotes by M.
+   }     
+   if Instruction.Index > 0 then
+   begin
+      if rI[Instruction.Index].ByteVal[0] = 1 then
+         Sign := -1
+      else
+         Sign := 1;
+      GetIndexedAddress := Instruction.Address + 
+         Sign*(rI[Instruction.Index].ByteVal[4]*MIXBase + 
+         rI[Instruction.Index].ByteVal[5]);
+   end;
+end;
+
+procedure TMIX.Execute(Instruction: TMIXInstruction);
+var
+   Address: integer;
+begin
+   case Instruction.OpCode of 
+
+   { LDA }
+   8:
+   begin
+      rA.Clear;
+      Address := GetIndexedAddress(Instruction);
+      rA.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
+         Instruction.Modifier mod 8);
+   end;
+
+
+  
+
+
+
+
+
+   else
+      writeln('Instruction not implemented yet.');      
+   end;  
 
 end;  
 
