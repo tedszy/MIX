@@ -22,6 +22,7 @@ type
       procedure Clear;
       constructor Create;
       constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte);
+      procedure Refill(a, b, c, d, e, f: TMIXByte);
       function ToString: string; override;
       function Check: boolean; virtual;
    end;  
@@ -70,6 +71,8 @@ type
       Modifier: integer;
       Index: integer;
       Address: integer;
+      procedure Refill(a, b, c, d, e, f: TMIXByte);
+      constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
       constructor Create(W: TMIXWord);
       destructor Destroy; override;
    end;
@@ -77,7 +80,7 @@ type
    { The MIX machine class. }
 
    TMIX = class
-   private
+   public
       Memory: TMIXMemory;
       rA: TMIXRegister;
       rX: TMIXRegister;
@@ -85,7 +88,6 @@ type
       rJ: TMIXJumpRegister;
       OT: TMIXOverflowToggle;
       CI: TMIXComparisonIndicator;
-   public
       constructor Create;
       procedure Show(Address: integer = 0; rows: integer = 5);
       procedure Reboot;
@@ -123,6 +125,16 @@ begin
    ByteVal[4] := e;
    ByteVal[5] := f;
 end;  
+
+procedure TMIXWord.Refill(a, b, c, d, e, f: TMIXByte);
+begin
+   ByteVal[0] := a;
+   ByteVal[1] := b;
+   ByteVal[2] := c;
+   ByteVal[3] := d;
+   ByteVal[4] := e;
+   ByteVal[5] := f;
+end; 
 
 function TMIXWord.ToString: string;
 begin
@@ -318,6 +330,35 @@ begin
    if Sign = 1 then Address := -Address;
 end;
 
+constructor TMIXInstruction.CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
+begin
+   Create(TMIXWord.CreateFromBytes(a, b, c, d, e, f));
+end;
+
+procedure TMIXInstruction.Refill(a, b, c, d, e, f: TMIXByte);
+var
+   Sign: integer;
+begin
+   {
+      a    b    c    d    e    f
+
+      0    1    2    3    4    5
+      +-   A    A    I    F    C
+   }
+   OpCode := f;
+   Modifier := e;
+   Index := d;
+   Address := b*MIXBase + c;
+   Sign := a;
+   Assert((Sign = 0) or (Sign = 1), 'TMIXInstruction.Refill:: bad sign byte.');
+   if Sign = 1 then Address := -Address;
+end;
+
+
+
+
+
+
 destructor TMIXInstruction.Destroy;
 begin
    inherited;
@@ -427,7 +468,9 @@ begin
       GetIndexedAddress := Instruction.Address + 
          Sign*(rI[Instruction.Index].ByteVal[4]*MIXBase + 
          rI[Instruction.Index].ByteVal[5]);
-   end;
+   end
+   else
+      GetIndexedAddress := Instruction.Address;
 end;
 
 procedure TMIX.Execute(Instruction: TMIXInstruction);
@@ -441,13 +484,15 @@ begin
    begin
       rA.Clear;
       Address := GetIndexedAddress(Instruction);
-      rA.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
+      writeln('address ==> ', Address);
+      writeln('cell ===>', Memory.Cell[Address].ToString);
+       rA.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
          Instruction.Modifier mod 8);
    end;
 
 
   
-
+   { To do... }
 
 
 
@@ -457,13 +502,6 @@ begin
    end;  
 
 end;  
-
-
-
-
-
-
-
 
 destructor TMIX.Destroy;
 var
@@ -476,6 +514,7 @@ begin
    rJ.Free;
    inherited;
 end;
+
 
 
 

@@ -6,13 +6,38 @@ uses
    mix;
 
 var
-   MyWord: TMIXWord;
    MyWord2: TMIXWord;
    I: integer;
    Goo: TMIXRegister;
    Knuth: TMIX;
 
+   MyWord: TMIXWord;
+   Instruction: TMIXInstruction;
+   Mem: integer = 2000;
+
 begin
+
+   MyWord := TMIXWord.CreateFromBytes(0, Mem div MIXBase, Mem mod MIXBase, 0, 5, 8);
+   writeln(MyWord.ToString);
+   Instruction := TMIXInstruction.Create(MyWord);
+   
+   {
+      we need a TMIXInstruction.ToString function.
+   }
+
+   Knuth := TMIX.Create;
+   Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
+
+
+
+
+   Knuth.rA.Load(Myword, 0, 5);
+
+   
+   Knuth.execute(Instruction);
+   Knuth.show(Mem);
+
+   {
    MyWord := TMIXWord.Create;
    MyWord2 := TMIXWord.CreateFromBytes(1,2,3,4,5,6);
    Goo := TMIXRegister.Create('rA');
@@ -36,7 +61,6 @@ begin
    writeln(Goo.ToString);
    writeln;
 
-   writeln('---- MIX ----');
 
    Knuth := TMIX.Create;
 
@@ -51,7 +75,7 @@ begin
 
    Knuth.show;
 
-
+   }
 
 
 
