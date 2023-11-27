@@ -75,6 +75,13 @@ type
       constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
       constructor Create(W: TMIXWord);
       destructor Destroy; override;
+
+
+      // ToString
+      function ToString: string; override;
+
+
+
    end;
 
    { The MIX machine class. }
@@ -354,14 +361,28 @@ begin
    if Sign = 1 then Address := -Address;
 end;
 
-
-
-
-
-
 destructor TMIXInstruction.Destroy;
 begin
    inherited;
+end;
+
+function TMIXInstruction.ToString: string; 
+var
+   Sign: integer;
+begin
+   {
+      a    b    c    d    e    f
+
+      0    1    2    3    4    5
+      +-   A    A    I    F    C
+
+      OpCode +-Address,Index(Modifier) ==> instruction ASM format.
+   }
+   if Address < 0 then Sign := -1 else Sign := 1;
+   ToString := format('[%0.2d %0.2d %0.2d %0.2d %0.2d %0.2d]', 
+      [Sign, Address div MIXBase, Address mod MIXBase, Index, Modifier, OpCode]);
+   ToString := ToString + ' : ' +
+      format('[%0.2d %0.5d %0.2d(%0.2d)]', [OpCode, Address, Index, Modifier]);
 end;
 
 { TMIX... }

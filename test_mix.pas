@@ -27,15 +27,17 @@ begin
 
    Knuth := TMIX.Create;
    Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
-
-
-
-
    Knuth.rA.Load(Myword, 0, 5);
-
-   
    Knuth.execute(Instruction);
-   Knuth.show(Mem);
+   writeln(Instruction.ToString); 
+
+
+
+//   Knuth.show(Mem);
+
+
+
+
 
    {
    MyWord := TMIXWord.Create;
