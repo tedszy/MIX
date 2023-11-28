@@ -12,17 +12,22 @@ var
    Passed: integer = 0;
    Failed: integer = 0;
 
-function TestEqualWords(W1, W2: TMIXWord): boolean;
-var
-   I: Integer;
+function RecordTestResult(Res: boolean): boolean;
 begin
-   TestEqualWords := true;
-   for I := 0 to 5 do
-      TestEqualWords := TestEqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
-   if TestEqualWords then
+   if Res then
       Passed := Passed + 1
    else
       Failed := Failed + 1;
+   RecordTestResult := Res;
+end;
+
+function EqualWords(W1, W2: TMIXWord): boolean;
+var
+   I: Integer;
+begin
+   EqualWords := true;
+   for I := 0 to 5 do
+      EqualWords := EqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
 end;
 
 procedure Test_LDA(TestNo: integer; 
@@ -32,6 +37,7 @@ var
    Width: integer = 25;
 begin
    {
+      LDA.
       Opcode 8.
 
       Exa, Exb, Exc, Exd, Exe, Exf are expected bytes values of the
@@ -46,7 +52,7 @@ begin
    Knuth.execute(Instruction);
    writeln('register contents => ':Width, Knuth.rA.ToString);
    Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
-   writeln('==> ', TestEqualWords(Knuth.rA, Expected));
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected)));
    writeln;
 end;
 
@@ -57,6 +63,7 @@ var
    Width: integer = 25;
 begin
    {
+      LDX.
       Opcode 15.
    }
    Knuth.Reboot;
@@ -68,10 +75,41 @@ begin
    Knuth.execute(Instruction);
    writeln('register contents => ':Width, Knuth.rX.ToString);
    Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
-   writeln('==> ', TestEqualWords(Knuth.rX, Expected));
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rX, Expected)));
    writeln;
 end;
 
+procedure Test_LDI(TestNo: integer; IndexReg: TMIXByte; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      LD1 to LD6.
+      Opcodes 8+1 = 9 to 8+6 = 14.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 8*FStart+Fstop, 8 + IndexReg); 
+   writeln(format('test: LDi %d ...', [TestNo]));
+   writeln('instruction => ':Width, Instruction.ToString);
+   writeln('memory => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Knuth.execute(Instruction);
+   writeln('register contents => ':Width, Knuth.rI[IndexReg].ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rI[IndexReg], Expected)));
+   writeln;
+end;
+
+
+
+
+
+
+
+
+(* Main. *)
 
 begin
    Knuth := TMIX.Create;
@@ -93,6 +131,13 @@ begin
    Test_LDX(5, 3000, 4, 4, 0, 0, 0, 0, 0, 5);
    Test_LDX(6, 3000, 0, 0, 1, 0, 0, 0, 0, 0);
    Test_LDX(7, 3000, 1, 1, 0, 0, 0, 0, 0, 80 div MIXBase);
+
+   Test_LDI(1, 3, 2000, 0, 2, 1, 0, 0, 0, 1, 16);
+   Test_LDI(2, 3, 2000, 4, 5, 0, 0, 0, 0, 5, 4);
+   Test_LDI(3, 3, 2000, 0, 0, 1, 0, 0, 0, 0, 0); 
+   Test_LDI(4, 3, 2000, 1, 2, 0, 0, 0, 0, 1, 16);
+   Test_LDI(5, 4, 3000, 0, 1, 1, 0, 0, 0, 0, 1);
+
 
 
    writeln('----------');

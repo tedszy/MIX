@@ -521,6 +521,15 @@ begin
          Instruction.Modifier mod 8);
    end;
 
+   { LD1 to LD6 }
+   8+1..8+6:
+   begin
+      rI[Instruction.OpCode-8].Clear;
+      Address := GetIndexedAddress(Instruction);
+      rI[Instruction.OpCode-8].Load(Memory.Cell[Address], 
+         Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
+
 
 
 
