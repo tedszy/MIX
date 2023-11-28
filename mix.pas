@@ -564,7 +564,21 @@ begin
       rX.Negate;
    end;
 
-  
+   { LD1N to LD6N }
+   16+1..16+6:
+   begin
+      { Same note applies. }
+      rI[Instruction.OpCode-16].Clear;
+      Address := GetIndexedAddress(Instruction);
+      rI[Instruction.OpCode-16].Load(Memory.Cell[Address], 
+         Instruction.Modifier div 8, Instruction.Modifier mod 8);
+      rI[Instruction.OpCode-16].Negate;
+   end;
+
+
+
+
+
    { To do... }
 
 

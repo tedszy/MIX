@@ -148,6 +148,28 @@ begin
    writeln;
 end;
 
+procedure Test_LDIN(TestNo: integer; IndexReg: TMIXByte; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      LD1N to LD6N.
+      Opcodes 16+1 = 17 to 16+6 = 22.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 8*FStart+Fstop, 16 + IndexReg); 
+   writeln(format('test: LDiN %d ...', [TestNo]));
+   writeln('instruction => ':Width, Instruction.ToString);
+   writeln('memory => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Knuth.execute(Instruction);
+   writeln('register contents => ':Width, Knuth.rI[IndexReg].ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rI[IndexReg], Expected)));
+   writeln;
+end;
 
 
 
@@ -196,9 +218,11 @@ begin
    Test_LDXN(6, 3000, 0, 0, 0, 0, 0, 0, 0, 0);
    Test_LDXN(7, 3000, 1, 1, 1, 0, 0, 0, 0, 80 div MIXBase);
 
-
-
-
+   Test_LDIN(1, 3, 2000, 0, 2, 0, 0, 0, 0, 1, 16);
+   Test_LDIN(2, 3, 2000, 4, 5, 1, 0, 0, 0, 5, 4);
+   Test_LDIN(3, 3, 2000, 0, 0, 0, 0, 0, 0, 0, 0); 
+   Test_LDIN(4, 3, 2000, 1, 2, 1, 0, 0, 0, 1, 16);
+   Test_LDIN(5, 4, 3000, 0, 1, 0, 0, 0, 0, 0, 1);
 
    writeln('----------');
    writeln('Passed: ', Passed);
