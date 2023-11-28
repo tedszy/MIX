@@ -1,6 +1,6 @@
 {$mode objfpc}{$R+}{$H+}
 
-program oop_test;
+program test_load;
 
 uses
    mix, SysUtils;
