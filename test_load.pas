@@ -171,8 +171,6 @@ begin
    writeln;
 end;
 
-
-
 (* Main. *)
 
 begin

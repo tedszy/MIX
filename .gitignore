@@ -8,11 +8,7 @@
 *.o
 *.ppu
 
-test_setup
 test_load
-test_store
-test_mix
-test_store.pas
 
 
 
