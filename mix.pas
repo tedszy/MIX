@@ -10,6 +10,14 @@ uses
 const
    MIXBase: byte = 64;           { 84 <= MIXBase <= 100. } 
    MIXMemoryCells = 4000;        { Total words of memory. }
+   MIXCharTable: array[0..55] of string =
+      (' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+       'I', 'Δ', 'J', 'K', 'L', 'M', 'N', 'O',
+       'P', 'Q', 'R', 'Σ', 'Π', 'S', 'T', 'U',
+       'V', 'W', 'X', 'Y', 'Z', '0', '1', '2',
+       '3', '4', '5', '6', '7', '8', '9', '.',
+       ',', '(', ')', '+', '-', '*', '/', '=',
+       '$', '<', '>', '@', ';', ':', '''');
 
 type 
    TMIXByte = byte;              { Reasonable choice for MIX byte. }
