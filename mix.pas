@@ -72,16 +72,11 @@ type
       Index: integer;
       Address: integer;
       procedure Refill(a, b, c, d, e, f: TMIXByte);
+      constructor Create;
       constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
-      constructor Create(W: TMIXWord);
+      constructor CreateFromWord(W: TMIXWord);
       destructor Destroy; override;
-
-
-      // ToString
       function ToString: string; override;
-
-
-
    end;
 
    { The MIX machine class. }
@@ -307,7 +302,15 @@ end;
 
 { TMIXInstruction... }
 
-constructor TMIXInstruction.Create(W: TMIXWord);
+constructor TMIXInstruction.Create;
+begin
+   OpCode := 0;
+   Modifier := 0;
+   Index := 0;
+   Address := 0;
+end;
+
+constructor TMIXInstruction.CreateFromWord(W: TMIXWord);
 var
    Sign: byte;
 begin
@@ -339,7 +342,7 @@ end;
 
 constructor TMIXInstruction.CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
 begin
-   Create(TMIXWord.CreateFromBytes(a, b, c, d, e, f));
+   CreateFromWord(TMIXWord.CreateFromBytes(a, b, c, d, e, f));
 end;
 
 procedure TMIXInstruction.Refill(a, b, c, d, e, f: TMIXByte);
