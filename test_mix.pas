@@ -9,15 +9,20 @@ var
    Knuth: TMIX;
    Expected: TMIXWord;
    Instruction: TMIXInstruction;
-   Mem: integer;
+   Passed: integer = 0;
+   Failed: integer = 0;
 
-function EqualWords(W1, W2: TMIXWord): boolean;
+function TestEqualWords(W1, W2: TMIXWord): boolean;
 var
    I: Integer;
 begin
-   EqualWords := true;
+   TestEqualWords := true;
    for I := 0 to 5 do
-      EqualWords := EqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
+      TestEqualWords := TestEqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
+   if TestEqualWords then
+      Passed := Passed + 1
+   else
+      Failed := Failed + 1;
 end;
 
 procedure Test_LDA(TestNo: integer; 
@@ -27,6 +32,8 @@ var
    Width: integer = 25;
 begin
    {
+      Opcode 8.
+
       Exa, Exb, Exc, Exd, Exe, Exf are expected bytes values of the
       word residing in rA after the instruction is executed.
    }
@@ -39,9 +46,32 @@ begin
    Knuth.execute(Instruction);
    writeln('register contents => ':Width, Knuth.rA.ToString);
    Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
-   writeln('==> ', EqualWords(Knuth.rA, Expected));
+   writeln('==> ', TestEqualWords(Knuth.rA, Expected));
    writeln;
 end;
+
+procedure Test_LDX(TestNo: integer; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      Opcode 15.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 8*FStart+Fstop, 15); 
+   writeln(format('test: LDX %d ...', [TestNo]));
+   writeln('instruction => ':Width, Instruction.ToString);
+   writeln('memory => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Knuth.execute(Instruction);
+   writeln('register contents => ':Width, Knuth.rX.ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', TestEqualWords(Knuth.rX, Expected));
+   writeln;
+end;
+
 
 begin
    Knuth := TMIX.Create;
@@ -56,10 +86,18 @@ begin
    Test_LDA(6, 3000, 0, 0, 1, 0, 0, 0, 0, 0);
    Test_LDA(7, 3000, 1, 1, 0, 0, 0, 0, 0, 80 div MIXBase);
 
+   Test_LDX(1, 2000, 0, 5, 1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4);
+   Test_LDX(2, 2000, 1, 5, 0, 89 div MIXBase, 80 mod MIXBase, 3, 5, 4);
+   Test_LDX(3, 2000, 3, 5, 0, 0, 0, 3, 5, 4);
+   Test_LDX(4, 2000, 0, 3, 1, 0, 0, 80 div MIXBase, 80 mod MIXBase, 3);
+   Test_LDX(5, 3000, 4, 4, 0, 0, 0, 0, 0, 5);
+   Test_LDX(6, 3000, 0, 0, 1, 0, 0, 0, 0, 0);
+   Test_LDX(7, 3000, 1, 1, 0, 0, 0, 0, 0, 80 div MIXBase);
 
 
-
-
+   writeln('----------');
+   writeln('Passed: ', Passed);
+   writeln('Failed: ', Failed);
 
    Expected.Free;
    Knuth.Free;

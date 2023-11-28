@@ -508,11 +508,21 @@ begin
    begin
       rA.Clear;
       Address := GetIndexedAddress(Instruction);
-//      writeln('address ==> ', Address);
-//      writeln('cell ===>', Memory.Cell[Address].ToString);
       rA.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
          Instruction.Modifier mod 8);
    end;
+
+   { LDX }
+   15:
+   begin
+      rX.Clear;
+      Address := GetIndexedAddress(Instruction);
+      rX.Load(Memory.Cell[Address], Instruction.Modifier div 8,
+         Instruction.Modifier mod 8);
+   end;
+
+
+
 
 
   
