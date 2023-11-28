@@ -553,7 +553,16 @@ begin
       rA.Negate;
    end;
 
-
+   { LDXN }
+   23:
+   begin
+      { See note above. }
+      rX.Clear;
+      Address := GetIndexedAddress(Instruction);
+      rX.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
+         Instruction.Modifier mod 8);
+      rX.Negate;
+   end;
 
   
    { To do... }
