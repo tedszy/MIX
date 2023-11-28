@@ -37,6 +37,7 @@ type
       function ToString: string; override;
       procedure Load(W: TMIXWord; Start, Stop: integer); virtual; 
       function Check: boolean; override;
+      procedure Negate;
    end;  
 
    TMIXIndexRegister = class(TMIXRegister)
@@ -190,6 +191,13 @@ end;
 function TMIXRegister.ToString: string;
 begin
    ToString :=  Mnemonic + ': ' + (inherited ToString);
+end;
+
+procedure TMIXRegister.Negate;
+begin
+   assert((ByteVal[0]=0) or (ByteVal[0]=1), 
+      'TMIXRegister.negate: bad sign byte.');
+   if ByteVal[0] = 1 then ByteVal[0]:=0 else ByteVal[0]:=1;
 end;
 
 { TMIXIndexRegister... } 
@@ -530,7 +538,20 @@ begin
          Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
-
+   { LDAN }
+   16:
+   begin
+      {
+         We assume that the opposite sign is loaded even when the
+         sign byte is not loaded. This assumption may need to be
+         revised as we progress with Knuth's description of MIX.
+      }
+      rA.Clear;
+      Address := GetIndexedAddress(Instruction);
+      rA.Load(Memory.Cell[Address], Instruction.Modifier div 8, 
+         Instruction.Modifier mod 8);
+      rA.Negate;
+   end;
 
 
 

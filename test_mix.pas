@@ -106,6 +106,30 @@ end;
 
 
 
+procedure Test_LDAN(TestNo: integer; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      LDAN.
+      Opcode 16.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4, Mem);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 8*FStart+Fstop, 16); 
+   writeln(format('test: LDAN %d ...', [TestNo]));
+   writeln('instruction => ':Width, Instruction.ToString);
+   writeln('memory => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Knuth.execute(Instruction);
+   writeln('register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected)));
+   writeln;
+end;
+
+
 
 
 
@@ -137,6 +161,16 @@ begin
    Test_LDI(3, 3, 2000, 0, 0, 1, 0, 0, 0, 0, 0); 
    Test_LDI(4, 3, 2000, 1, 2, 0, 0, 0, 0, 1, 16);
    Test_LDI(5, 4, 3000, 0, 1, 1, 0, 0, 0, 0, 1);
+
+   Test_LDAN(1, 2000, 0, 5, 0, 80 div MIXBase, 80 mod MIXBase, 3, 5, 4);
+   Test_LDAN(2, 2000, 1, 5, 1, 89 div MIXBase, 80 mod MIXBase, 3, 5, 4);
+   Test_LDAN(3, 2000, 3, 5, 1, 0, 0, 3, 5, 4);
+   Test_LDAN(4, 2000, 0, 3, 0, 0, 0, 80 div MIXBase, 80 mod MIXBase, 3);
+   Test_LDAN(5, 3000, 4, 4, 1, 0, 0, 0, 0, 5);
+   Test_LDAN(6, 3000, 0, 0, 0, 0, 0, 0, 0, 0);
+   Test_LDAN(7, 3000, 1, 1, 1, 0, 0, 0, 0, 80 div MIXBase);
+
+
 
 
 
