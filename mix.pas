@@ -70,6 +70,7 @@ type
       procedure Show(Address, Rows: integer);
       procedure Clear;
       destructor Destroy; override;
+      procedure Store(Mem: integer; W: TMIXWord; Start, Stop: integer);
    end;
 
    { MIX executable instruction. }
@@ -314,6 +315,33 @@ var
 begin
    for I := 0 to MIXMemoryCells - 1 do Cell[I].Free;
    inherited;
+end;
+
+procedure TMIXMemory.Store(Mem: integer; W: TMIXWord; Start, Stop: integer);
+var
+   I: integer;
+begin
+   {
+      Store bytes from word W into fields of memory Cell[Mem].
+      This is used for storing register data into memory.
+
+      We over-write bytes [Start..Stop] in the word at address Mem, 
+      with the corresponding number of bytes taken from word W.
+      These bytes are taken from the right.
+
+      Note that we do not clear the word located at address Mem
+      before writing to it.
+
+      As with loading registers, a seperate case applies when 
+      the sign byte (ByteVal[0]) is involved.
+   }
+   if Start = 0 then
+   begin
+      Cell[Mem].ByteVal[0] := W.ByteVal[0];
+      Start := Start + 1;
+   end;   
+   for I := Start to Stop do
+      Cell[Mem].ByteVal[I] := W.ByteVal[(I - Start) + 6 - (Stop - Start + 1)];         
 end;
 
 { TMIXInstruction... }
@@ -583,7 +611,12 @@ begin
       rI[Instruction.OpCode-16].Negate;
    end;
 
-
+   { STA }
+   24:
+   begin
+      Address := GetIndexedAddress(Instruction);
+      Memory.Store(Address, rA, Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
 
 
 
