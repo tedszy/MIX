@@ -618,6 +618,18 @@ begin
       Memory.Store(Address, rA, Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
+   { STX }
+   31:
+   begin
+      Address := GetIndexedAddress(Instruction);
+      Memory.Store(Address, rX, Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
+
+
+
+
+
+
 
 
    { To do... }

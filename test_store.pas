@@ -58,6 +58,31 @@ begin
    writeln;
 end;
 
+procedure Test_STX(TestNo: integer; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      STX.
+      Opcode 31.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 1, 2, 3, 4, 5, Mem);
+   Knuth.rX.Refill(0, 6, 7, 8, 9, 0);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, FStart*8+FStop, 31); 
+   writeln(format('test: STX %d ...', [TestNo]));
+   writeln('memory before => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   writeln('register contents => ':Width, Knuth.rX.ToString);
+   writeln('instruction => ':Width, Instruction.ToString);
+   Knuth.execute(Instruction);
+   writeln('memory after => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.Peek(Mem), Expected)));
+   writeln;
+end;
+
 (* Main. *)
 
 begin
@@ -71,6 +96,11 @@ begin
    Test_STA(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
    Test_STA(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
+   Test_STX(1, 2000, 0, 5, 0, 6, 7, 8, 9, 0);
+   Test_STX(2, 2000, 1, 5, 1, 6, 7, 8, 9, 0);
+   Test_STX(3, 2000, 5, 5, 1, 1, 2, 3, 4, 0);
+   Test_STX(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
+   Test_STX(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
 
    writeln('----------');
