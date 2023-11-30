@@ -640,7 +640,24 @@ begin
       Memory.Store(Address, rJ, Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
+   { STZ }
+   33:
+   begin
+      {
+         Should we clear rA before doing STA? Or should we directly
+         zero the bytes in the field of word Cell[Address]? 
 
+         We choose the first way, because it may not be possible
+         in most machines to directly write to memory that way.
+         Usually the source bytes have to be in a register.
+
+         Of course this assumption may need to be updated
+         as we go through more of Knuth's text.
+      }
+      rA.Clear;
+      Address := GetIndexedAddress(Instruction);
+      Memory.Store(Address, rA, Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
 
 
 

@@ -83,9 +83,6 @@ begin
    writeln;
 end;
 
-
-
-
 procedure Test_STI(TestNo: integer; IndexReg: TMIXByte;
    Mem: integer; FStart, FStop: TMIXByte;
    Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
@@ -110,9 +107,6 @@ begin
    writeln('==> ', RecordTestResult(EqualWords(Knuth.Peek(Mem), Expected)));
    writeln;
 end;
-
-
-
 
 procedure Test_STJ(TestNo: integer; 
    Mem: integer; FStart, FStop: TMIXByte;
@@ -139,8 +133,32 @@ begin
    writeln;
 end;
 
+procedure Test_STz(TestNo: integer; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      STz.
+      Opcode 33.
 
-
+      Equivalent to clearing rA, then doing STA.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 1, 2, 3, 4, 5, Mem);
+   // Knuth.rA.Refill(0, 0, 0, 0, 0, 0);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, FStart*8+FStop, 33); 
+   writeln(format('test: STZ %d ...', [TestNo]));
+   writeln('memory before => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   writeln('register contents => ':Width, Knuth.rA.ToString);
+   writeln('instruction => ':Width, Instruction.ToString);
+   Knuth.execute(Instruction);
+   writeln('memory after => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.Peek(Mem), Expected)));
+   writeln;
+end;
 
 (* Main. *)
 
@@ -172,6 +190,12 @@ begin
    Test_STJ(3, 2000, 5, 5, 1, 1, 2, 3, 4, 0);
    Test_STJ(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
    Test_STJ(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
+
+   Test_STZ(1, 2000, 0, 5, 0, 0, 0, 0, 0, 0);
+   Test_STZ(2, 2000, 1, 5, 1, 0, 0, 0, 0, 0);
+   Test_STZ(3, 2000, 5, 5, 1, 1, 2, 3, 4, 0);
+   Test_STZ(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
+   Test_STZ(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
    writeln('----------');
    writeln('Passed: ', Passed);
