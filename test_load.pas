@@ -3,32 +3,12 @@
 program test_load;
 
 uses
-   mix, SysUtils;
+   mix, testing, SysUtils;
 
 var
    Knuth: TMIX;
    Expected: TMIXWord;
    Instruction: TMIXInstruction;
-   Passed: integer = 0;
-   Failed: integer = 0;
-
-function RecordTestResult(Res: boolean): boolean;
-begin
-   if Res then
-      Passed := Passed + 1
-   else
-      Failed := Failed + 1;
-   RecordTestResult := Res;
-end;
-
-function EqualWords(W1, W2: TMIXWord): boolean;
-var
-   I: Integer;
-begin
-   EqualWords := true;
-   for I := 0 to 5 do
-      EqualWords := EqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
-end;
 
 procedure Test_LDA(TestNo: integer; 
    Mem: integer; FStart, FStop: TMIXByte;
@@ -222,9 +202,7 @@ begin
    Test_LDIN(4, 3, 2000, 1, 2, 1, 0, 0, 0, 1, 16);
    Test_LDIN(5, 4, 3000, 0, 1, 0, 0, 0, 0, 0, 1);
 
-   writeln('----------');
-   writeln('Passed: ', Passed);
-   writeln('Failed: ', Failed);
+   ReportTests;
 
    Expected.Free;
    Knuth.Free;

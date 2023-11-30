@@ -3,32 +3,12 @@
 program test_store;
 
 uses
-   mix, SysUtils;
+   mix, testing, SysUtils;
 
 var
    Knuth: TMIX;
    Expected: TMIXWord;
    Instruction: TMIXInstruction;
-   Passed: integer = 0;
-   Failed: integer = 0;
-
-function RecordTestResult(Res: boolean): boolean;
-begin
-   if Res then
-      Passed := Passed + 1
-   else
-      Failed := Failed + 1;
-   RecordTestResult := Res;
-end;
-
-function EqualWords(W1, W2: TMIXWord): boolean;
-var
-   I: Integer;
-begin
-   EqualWords := true;
-   for I := 0 to 5 do
-      EqualWords := EqualWords and (W1.ByteVal[I]=W2.ByteVal[I]);
-end;
 
 procedure Test_STA(TestNo: integer; 
    Mem: integer; FStart, FStop: TMIXByte;
@@ -140,13 +120,15 @@ var
    Width: integer = 25;
 begin
    {
-      STz.
+      STZ.
       Opcode 33.
 
       Equivalent to clearing rA, then doing STA.
    }
    Knuth.Reboot;
    Knuth.PokeBytes(1, 1, 2, 3, 4, 5, Mem);
+   // We zero out rA during the execution of this instruction.
+   // So we do not need the following line...
    // Knuth.rA.Refill(0, 0, 0, 0, 0, 0);
    Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, FStart*8+FStop, 33); 
    writeln(format('test: STZ %d ...', [TestNo]));
@@ -197,9 +179,7 @@ begin
    Test_STZ(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
    Test_STZ(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
-   writeln('----------');
-   writeln('Passed: ', Passed);
-   writeln('Failed: ', Failed);
+   ReportTests;
 
    Expected.Free;
    Knuth.Free;
