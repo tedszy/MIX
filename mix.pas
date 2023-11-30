@@ -633,6 +633,15 @@ begin
          Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
+   { STJ }
+   32:
+   begin
+      Address := GetIndexedAddress(Instruction);
+      Memory.Store(Address, rJ, Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
+
+
+
 
 
 

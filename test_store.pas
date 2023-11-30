@@ -114,6 +114,31 @@ end;
 
 
 
+procedure Test_STJ(TestNo: integer; 
+   Mem: integer; FStart, FStop: TMIXByte;
+   Exa, Exb, Exc, Exd, Exe, Exf: TMIXByte);
+var
+   Width: integer = 25;
+begin
+   {
+      STJ.
+      Opcode 32.
+   }
+   Knuth.Reboot;
+   Knuth.PokeBytes(1, 1, 2, 3, 4, 5, Mem);
+   Knuth.rJ.Refill(0, 0, 0, 0, 8, 0);
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, FStart*8+FStop, 32); 
+   writeln(format('test: STJ %d ...', [TestNo]));
+   writeln('memory before => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   writeln('register contents => ':Width, Knuth.rJ.ToString);
+   writeln('instruction => ':Width, Instruction.ToString);
+   Knuth.execute(Instruction);
+   writeln('memory after => ':Width, inttostr(Mem)+': '+Knuth.Peek(Mem).ToString);
+   Expected.Refill(Exa, Exb, Exc, Exd, Exe, Exf);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.Peek(Mem), Expected)));
+   writeln;
+end;
+
 
 
 
@@ -142,11 +167,11 @@ begin
    Test_STI(4, 3, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
    Test_STI(5, 3, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
-
-
-
-
-
+   Test_STJ(1, 2000, 0, 5, 0, 0, 0, 0, 8, 0);
+   Test_STJ(2, 2000, 1, 5, 1, 0, 0, 0, 8, 0);
+   Test_STJ(3, 2000, 5, 5, 1, 1, 2, 3, 4, 0);
+   Test_STJ(4, 2000, 2, 2, 1, 1, 0, 3, 4, 5);
+   Test_STJ(5, 2000, 0, 1, 0, 0, 2, 3, 4, 5);
 
    writeln('----------');
    writeln('Passed: ', Passed);
