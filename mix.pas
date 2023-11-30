@@ -625,7 +625,13 @@ begin
       Memory.Store(Address, rX, Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
-
+   { ST1 to ST6}
+   24+1..24+6:
+   begin
+      Address := GetIndexedAddress(Instruction);
+      Memory.Store(Address, rI[Instruction.OpCode-24], 
+         Instruction.Modifier div 8, Instruction.Modifier mod 8);
+   end;
 
 
 
