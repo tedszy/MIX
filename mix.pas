@@ -636,6 +636,11 @@ begin
    { STJ }
    32:
    begin
+      { 
+         In MIX assembly, the absence of a field modifier implies that the 
+         field modifier byte is 05. But for the STJ instruction, the absence
+         implies a default value of 02.
+      }
       Address := GetIndexedAddress(Instruction);
       Memory.Store(Address, rJ, Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
