@@ -580,10 +580,11 @@ var
    Address: integer;
    Start: integer;
    Stop: integer;
-   ATemp, BTemp: longint;  { Temporary arithmetic variables. }
-   MIXOverflow: longint;
+   ATemp: longint;  { Temporary arithmetic variables. }
+   MIXMaxInteger: longint;
+   SignByte, ba, bb, bc, bd, be: byte;
 begin
-   MIXOverflow := MIXBase**5 - 1;
+   MIXMaxInteger := MIXBase**5 - 1;
    case Instruction.OpCode of 
 
    { LDA }
@@ -713,27 +714,60 @@ begin
       Address := GetIndexedAddress(Instruction);
       Start := Instruction.Modifier div 8;
       Stop := Instruction.Modifier mod 8;
+      {
+         Get the field value from the memory word, add it to the value
+         of the entire register rA.
+      }
+      ATemp := rA.GetValue(0,5) + Memory.Cell[Address].GetValue(Start, Stop);
+      {
+         Check if there is an overflow: abs(ATemp) > MIXOverflow. 
+         How do we deal with overflow?
+         We set Overflow toggle to ON,
+         and leave (ATemp mod MIXBase**5)  in rA.
+      }
+      if ATemp > 0 then
+         SignByte := 0
+      else if ATemp < 0 then
+         SignByte := 1
+      else
+         SignByte := rA.ByteVal[0]; { Preserve sign byte if V=0. }
 
-      { Add the contents of rTemp (which Knuth calls V)
-        to the contents of rA. Check for overflow or
-        underflow. }
+      ATemp := abs(ATemp);
+      if ATemp > MIXMaxInteger then
+      begin
+         { Overflow case. }
+         be := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bd := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bc := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bb := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         ba := ATemp mod MIXBase;
 
+         rA.Refill(SignByte, ba, bb, bc, bd, be);
+         OT := ON;
+         writeln('overflow on');
+      end
+      else if ATemp = 0 then
+         { Zero case. Preserve rA sign. }
+         rA.Refill(SignByte, 0, 0, 0, 0, 0)
+      else
+      begin
+         { Normal addition case. }
+         be := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bd := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bc := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         bb := ATemp mod MIXBase;
+         ATemp := ATemp div MIXBase;
+         ba := ATemp mod MIXBase;
 
-
-
-      { 
-         Clear;
-         if Start = 0 then
-         begin
-            ByteVal[0] := W.ByteVal[0];
-            for I := 1 to Stop do 
-            ByteVal[5 - Stop + I] := W.ByteVal[I]
-         end
-         else
-            for I := Start to Stop do ByteVal[5 - Stop + I] := W.ByteVal[I];
-         }
-
-
+         rA.Refill(SignByte, ba, bb, bc, bd, be);
+      end;
    end;
 
 

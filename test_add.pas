@@ -22,7 +22,7 @@ begin
    { Put something in rA. We will sideways-add these bytes.
      Not including the sign byte. }
    Knuth.rA.Refill(0, 1, 2, 3, 4, 5);
-   writeln(format('test: ADD %d ...', [TestNo]));
+   writeln(format('test: Sideways ADD %d ...', [TestNo]));
    writeln('initial register contents => ':Width, Knuth.rA.ToString);
 
    { STA 2000 }
@@ -123,6 +123,36 @@ begin
    writeln;
 end;
 
+procedure Test_Overflow;
+var
+   TestNo: integer = 1;
+   Width: integer = 25;
+   Mem: integer = 2000;
+begin
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 63, 1, 2, 3, 4);
+   Knuth.PokeBytes(0, 1, 0, 0, 0, 0, Mem);
+   writeln(format('test: Overflow %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 1);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(0, 0, 1, 2, 3, 4);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = ON)));
+   writeln;
+end;
+
+procedure Test_SignByte;
+begin
+   { put negative number in rA and add... }
+end;
+
+
+
+
+
 
 
 (* Main. *)
@@ -138,6 +168,9 @@ begin
    Test_GetValue4;
 
    Test_SidewaysAdd;
+
+   Test_Overflow;
+   Test_SignByte;
 
 
    ReportTests;
