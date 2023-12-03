@@ -10,6 +10,8 @@
 
 test_load
 test_store
+test_add
+
 
 
 

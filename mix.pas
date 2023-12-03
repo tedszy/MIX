@@ -5,7 +5,7 @@ unit mix;
 interface
 
 uses
-   SySUtils;
+   SySUtils, Math;
 
 const
    MIXBase: byte = 64;           { 84 <= MIXBase <= 100. } 
@@ -33,6 +33,7 @@ type
       procedure Refill(a, b, c, d, e, f: TMIXByte);
       function ToString: string; override;
       function Check: boolean; virtual;
+      function GetValue(F_Start, F_Stop: integer): longint;
    end;  
 
    { Register types: main register, index, jump. }
@@ -47,6 +48,7 @@ type
       function Check: boolean; override;
       procedure Negate;
    end;  
+   
 
    TMIXIndexRegister = class(TMIXRegister)
    public
@@ -162,6 +164,38 @@ begin
    Check := true;
    for I := 0 to 5 do
       Check := Check and (ByteVal[I] < MIXBase);
+end;
+
+function TMIXWord.GetValue(F_Start, F_Stop: integer): longint;
+var
+   I: integer;
+   Sign: integer;
+   Multiplier: integer;
+begin
+   {
+      Take the bytes in the field (F_Start:F_stop)
+      and convert them into an integer value.
+      If the field contains the sign byte, 
+      then consider the sign.
+   }
+   assert((ByteVal[0]=0) or (ByteVal[0]=1), 'TMIXWord.GetValue: bad sign byte.');
+
+   if F_Start = 0 then
+   begin
+      if ByteVal[0] = 0 then Sign := 1 else Sign := -1;
+      F_Start := 1;
+   end
+   else
+      Sign := 1;
+
+   GetValue := 0;
+   Multiplier := 1;
+   for I := F_Stop downto F_Start do
+   begin
+      GetValue := GetValue + ByteVal[I]*Multiplier; 
+      Multiplier := Multiplier*MIXBase; 
+   end;
+   GetValue := Sign*GetValue;
 end;
 
 { TMIXRegister... }
@@ -544,7 +578,12 @@ end;
 procedure TMIX.Execute(Instruction: TMIXInstruction);
 var
    Address: integer;
+   Start: integer;
+   Stop: integer;
+   ATemp, BTemp: longint;  { Temporary arithmetic variables. }
+   MIXOverflow: longint;
 begin
+   MIXOverflow := MIXBase**5 - 1;
    case Instruction.OpCode of 
 
    { LDA }
@@ -664,7 +703,38 @@ begin
       Memory.Store(Address, rA, Instruction.Modifier div 8, Instruction.Modifier mod 8);
    end;
 
+   { ADD }
+   1:
+   begin
+      {
+         We store what Knuth calls V, the value of the field,
+         into a temporary virtual register.
+      } 
+      Address := GetIndexedAddress(Instruction);
+      Start := Instruction.Modifier div 8;
+      Stop := Instruction.Modifier mod 8;
 
+      { Add the contents of rTemp (which Knuth calls V)
+        to the contents of rA. Check for overflow or
+        underflow. }
+
+
+
+
+      { 
+         Clear;
+         if Start = 0 then
+         begin
+            ByteVal[0] := W.ByteVal[0];
+            for I := 1 to Stop do 
+            ByteVal[5 - Stop + I] := W.ByteVal[I]
+         end
+         else
+            for I := Start to Stop do ByteVal[5 - Stop + I] := W.ByteVal[I];
+         }
+
+
+   end;
 
 
 
@@ -677,7 +747,6 @@ begin
    else
       writeln('Instruction not implemented yet.');      
    end;  
-
 end;  
 
 destructor TMIX.Destroy;
