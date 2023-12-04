@@ -226,6 +226,7 @@ begin
 
    writeln(format('test: SUB %d ...', [TestNo]));
    writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   writeln('memory cell contents => ':Width, Knuth.Peek(Mem).ToString);
    
    Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 2);
    Knuth.execute(Instruction);
@@ -237,8 +238,33 @@ begin
    writeln;
 end;
 
-{ Would be a good idea to check Knuth's sub example in reverse, as an ADD... }
+procedure Test_ADD3;
+var
+   TestNo: integer = 3;
+   Width: integer = 25;
+   Mem: integer = 2000;
+begin
+   { 
+      Would be a good idea to check Knuth's 
+      SUB example in reverse, as an ADD... 
+  }
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 11, 62, 2, 21, 55);
+   Knuth.PokeBytes(1, 31, 16, 2, 22, 00, Mem);
 
+   writeln(format('test: ADBD %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   writeln('memory cell contents => ':Width, Knuth.Peek(Mem).ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 1);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(1, 19, 18, 00, 00, 9);
+   writeln('expected register contents => ':Width, Expected.ToString);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = OFF)));
+   writeln;
+end;
 
 
 
@@ -261,6 +287,7 @@ begin
    Test_ADD1;
    Test_ADD2;
    Test_SUB1;
+   Test_ADD3;
 
    ReportTests;
 
