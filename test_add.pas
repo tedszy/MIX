@@ -190,7 +190,54 @@ begin
    writeln;
 end;
 
+procedure Test_ADD2;
+var
+   TestNo: integer = 2;
+   Width: integer = 25;
+   Mem: integer = 1000;
+begin
+   { ADD test from Knuth. }
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 1234 div MIXBase, 1234 mod MIXBase, 1, 150 div MIXBase, 150 mod MIXBase);
+   Knuth.PokeBytes(0, 100 div MIXBase, 100 mod MIXBase, 5, 50 div MIXBase, 50 mod MIXBase, Mem);
 
+   writeln(format('test: ADD %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 1);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(0, 1334 div MIXBase, 1334 mod MIXBase, 6, 200 div MIXBase, 200 mod MIXBase);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = OFF)));
+   writeln;
+end;
+
+procedure Test_SUB1;
+var
+   TestNo: integer = 1;
+   Width: integer = 25;
+   Mem: integer = 2000;
+begin
+   { SUB test from Knuth. }
+   Knuth.Reboot;
+   Knuth.rA.Refill(1, 1234 div MIXBase, 1234 mod MIXBase, 0, 0, 9);
+   Knuth.PokeBytes(1, 2000 div MIXBase, 2000 mod MIXBase, 150 div MIXBase, 150 mod MIXBase, 0, Mem);
+
+   writeln(format('test: SUB %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 2);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(0, 766 div MIXBase, 766 mod MIXBase, 149 div MIXBase, 149 mod MIXBase, 55);
+   writeln('expected register contents => ':Width, Expected.ToString);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = OFF)));
+   writeln;
+end;
+
+{ Would be a good idea to check Knuth's sub example in reverse, as an ADD... }
 
 
 
@@ -212,6 +259,8 @@ begin
    Test_Overflow;
    Test_SignByte;
    Test_ADD1;
+   Test_ADD2;
+   Test_SUB1;
 
    ReportTests;
 
