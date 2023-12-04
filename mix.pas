@@ -575,6 +575,24 @@ begin
       GetIndexedAddress := Instruction.Address;
 end;
 
+procedure ValueToBytes(V: integer; var ba, bb, bc, bd, be: TMIXByte);
+begin
+   {
+      V is a positive integer value. We find the first five bytes
+      of its MIXByte representation. If V >= MIXByte**5
+      then the resulting bytes are effectively V mod MIXByte**5.
+   }
+   be := V mod MIXBase;
+   V := V div MIXBase;
+   bd := V mod MIXBase;
+   V := V div MIXBase;
+   bc := V mod MIXBase;
+   V := V div MIXBase;
+   bb := V mod MIXBase;
+   V := V div MIXBase;
+   ba := V mod MIXBase;
+end;
+
 procedure TMIX.Execute(Instruction: TMIXInstruction);
 var
    Address: integer;
@@ -732,16 +750,7 @@ begin
       if ATemp > MIXMaxInteger then
       begin
          { Overflow case. }
-         be := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bd := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bc := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bb := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         ba := ATemp mod MIXBase;
-
+         ValueToBytes(ATemp, ba, bb, bc, bd, be);
          rA.Refill(SignByte, ba, bb, bc, bd, be);
          OT := ON;
          writeln('overflow on');
@@ -752,16 +761,7 @@ begin
       else
       begin
          { Normal addition case. }
-         be := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bd := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bc := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bb := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         ba := ATemp mod MIXBase;
-
+         ValueToBytes(ATemp, ba, bb, bc, bd, be);
          rA.Refill(SignByte, ba, bb, bc, bd, be);
       end;
    end;
@@ -793,21 +793,11 @@ begin
          SignByte := 1
       else
          SignByte := rA.ByteVal[0]; { Preserve sign byte if V=0. }
-
       ATemp := abs(ATemp);
       if ATemp > MIXMaxInteger then
       begin
          { Overflow case. }
-         be := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bd := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bc := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bb := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         ba := ATemp mod MIXBase;
-
+         ValueToBytes(ATemp, ba, bb, bc, bd, be);
          rA.Refill(SignByte, ba, bb, bc, bd, be);
          OT := ON;
          writeln('overflow on');
@@ -818,16 +808,7 @@ begin
       else
       begin
          { Normal addition case. }
-         be := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bd := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bc := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         bb := ATemp mod MIXBase;
-         ATemp := ATemp div MIXBase;
-         ba := ATemp mod MIXBase;
-
+         ValueToBytes(ATemp, ba, bb, bc, bd, be);
          rA.Refill(SignByte, ba, bb, bc, bd, be);
       end;
    end;
