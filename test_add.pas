@@ -145,10 +145,50 @@ begin
 end;
 
 procedure Test_SignByte;
+var
+   TestNo: integer = 1;
+   Width: integer = 25;
+   Mem: integer = 2000;
 begin
    { put negative number in rA and add... }
+   Knuth.Reboot;
+   Knuth.rA.Refill(1, 1, 2, 3, 4, 5);
+   Knuth.PokeBytes(0, 1, 2, 3, 4, 5, Mem);
+
+   writeln(format('test: Sign byte %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 1);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(1, 0, 0, 0, 0, 0);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = OFF)));
+   writeln;
 end;
 
+procedure Test_ADD1;
+var
+   TestNo: integer = 1;
+   Width: integer = 25;
+   Mem: integer = 2000;
+begin
+   { Normal usage of ADD... }
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 1, 2, 3, 4, 5);
+   Knuth.PokeBytes(0, 5, 4, 3, 2, 1, Mem);
+
+   writeln(format('test: ADD %d ...', [TestNo]));
+   writeln('initial register contents => ':Width, Knuth.rA.ToString);
+   
+   Instruction.Refill(0, Mem div MIXBase, Mem mod MIXBase, 0, 0*8 + 5, 1);
+   Knuth.execute(Instruction);
+
+   writeln('result register contents => ':Width, Knuth.rA.ToString);
+   Expected.Refill(0, 6, 6, 6, 6, 6);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected) and (Knuth.OT = OFF)));
+   writeln;
+end;
 
 
 
@@ -171,7 +211,7 @@ begin
 
    Test_Overflow;
    Test_SignByte;
-
+   Test_ADD1;
 
    ReportTests;
 
