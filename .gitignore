@@ -11,6 +11,8 @@
 test_load
 test_store
 test_add
+test_mul
+
 
 
 

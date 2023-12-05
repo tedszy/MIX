@@ -575,7 +575,7 @@ begin
       GetIndexedAddress := Instruction.Address;
 end;
 
-procedure ValueToBytes(V: integer; var ba, bb, bc, bd, be: TMIXByte);
+procedure ValueToBytes(V: int64; var ba, bb, bc, bd, be: TMIXByte);
 begin
    {
       V is a positive integer value. We find the first five bytes
@@ -593,14 +593,46 @@ begin
    ba := V mod MIXBase;
 end;
 
+procedure ValueToBytesExtended(V: int64; 
+   var ba, bb, bc, bd, be, xa, xb, xc, xd, xe: TMIXByte);
+begin
+   {
+      Same as above but 10 bytes.
+   }
+   xe := V mod MIXBase;
+   V := V div MIXBase;
+   xd := V mod MIXBase;
+   V := V div MIXBase;
+   xc := V mod MIXBase;
+   V := V div MIXBase;
+   xb := V mod MIXBase;
+   V := V div MIXBase;
+   xa := V mod MIXBase;
+   V := V div MIXBase;
+
+   be := V mod MIXBase;
+   V := V div MIXBase;
+   bd := V mod MIXBase;
+   V := V div MIXBase;
+   bc := V mod MIXBase;
+   V := V div MIXBase;
+   bb := V mod MIXBase;
+   V := V div MIXBase;
+   ba := V mod MIXBase;
+end;
+
+
+
+
 procedure TMIX.Execute(Instruction: TMIXInstruction);
 var
    Address: integer;
    Start: integer;
    Stop: integer;
-   ATemp: longint;  { Temporary arithmetic variables. }
+   ATemp: int64;  { Temporary arithmetic variables. }
    MIXMaxInteger: longint;
-   SignByte, ba, bb, bc, bd, be: byte;
+   SignByte, ba, bb, bc, bd, be: TMIXByte;
+   xa, xb, xc, xd, xe: TMIXByte;
 begin
    MIXMaxInteger := MIXBase**5 - 1;
    case Instruction.OpCode of 
@@ -813,10 +845,63 @@ begin
       end;
    end;
 
+   { MUL }
+   3:
+   begin
+      {
+         Before proceeding we should check if a 10-byte MIX integer
+         fits into a Pascal int64.
+
+         int64         => 9223372036854775807
+         MIXBase**10-1 => 1152921504606846975
+        
+         We are very lucky that it does fit.
+
+         A slightly better approach. We get the unsigned integer
+         values of field (1:5) of rA and Cell and multiply, 
+         but sign byte of result will be 00 if both sign bytes 
+         are same, 01 otherwise.
+
+         To do the above, we increment Start if the instruction
+         is called with Start=0.
+
+         Lower bytes of the product go in rX, 
+         more significant bytes go in rA. 
+         Both rA and rX end up with the same sign byte.
+      }
+      Address := GetIndexedAddress(Instruction);
+      Start := Instruction.Modifier div 8;
+      Stop := Instruction.Modifier mod 8;
+
+      { be careful with this... what if Start <> 0? }
+      if Start = 0 then 
+      begin
+         SignByte := Memory.Cell[Address].ByteVal[0];
+         Start := 1;
+      end;
+
+      { ATemp is going to be unsigned. }
+      ATemp := rA.GetValue(1,5) * Memory.Cell[Address].GetValue(Start, Stop);
+      ValueToBytesExtended(ATemp, ba, bb, bc, bd, be, xa, xb, xc, xd, xe);
+
+      { Determine correct sign byte for both rA and rX. }
+      if SignByte = rA.ByteVal[0] then
+         SignByte := 0
+      else
+         SignByte := 1;
+      
+      rA.Refill(SignByte, ba, bb, bc, bd, be);
+      rX.Refill(SignByte, xa, xb, xc, xd, xe);
+   end;
+
+
+
+
+
+
+
 
    { To do... }
-
-
 
 
    else
