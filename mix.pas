@@ -113,6 +113,10 @@ type
       destructor Destroy; override;
    end;  
 
+procedure ValueToBytes(V: int64; var ba, bb, bc, bd, be: TMIXByte);
+procedure ValueToBytesExtended(V: int64; 
+   var ba, bb, bc, bd, be, xa, xb, xc, xd, xe: TMIXByte);
+
 implementation
 
 { TMIXWord... }

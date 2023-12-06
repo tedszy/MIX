@@ -36,6 +36,55 @@ begin
    writeln;
 end;
 
+procedure Test_MUL2;
+var 
+   Address: integer = 1000;
+   Width: integer = 25;
+   TestNo: integer = 2;
+   aa, ab, ac, ad, ae, xa, xb, xc, xd, xe: TMIXByte;
+begin
+   Knuth.Reboot;
+   ValueToBytes(112, aa, ab, ac, ad, ae);
+   Knuth.rA.Refill(1, aa, ab, ac, ad, ae);
+   Knuth.PokeBytes(1, 2, 3, 4, 5, 6, Address);
+   writeln(format('test: MUL %d ...', [TestNo]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 1*8 + 1, 3);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   ValueToBytes(224, xa, xb, xc, xd, xe);
+   Expected_rA.Refill(1, 0, 0, 0, 0, 0);
+   Expected_rX.Refill(1, xa, xb, xc, xd, xe);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)));
+   writeln;
+end;
+
+
+procedure Test_MUL3;
+var 
+   Address: integer = 1000;
+   Width: integer = 25;
+   TestNo: integer = 3;
+begin
+   Knuth.Reboot;
+   Knuth.rA.Refill(1, 50, 0, 112 div MIXBase, 112 mod MIXBase, 4);
+   Knuth.PokeBytes(1, 2, 0, 0, 0, 0, Address);
+   writeln(format('test: MUL %d ...', [TestNo]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 0*8 + 5, 3);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   Expected_rA.Refill(0, 100 div MIXBase, 100 mod MIXBase, 0, 224 div MIXBase, 224 mod MIXBase);
+   Expected_rX.Refill(0, 8, 0, 0, 0, 0);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)));
+   writeln;
+end;
 
 
 
@@ -51,6 +100,8 @@ begin
    Instruction := TMIXInstruction.Create;
 
    Test_MUL1;
+   Test_MUL2;
+   Test_MUL3;
 
    ReportTests;
 
