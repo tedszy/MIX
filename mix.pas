@@ -34,6 +34,7 @@ type
       function ToString: string; override;
       function Check: boolean; virtual;
       function GetValue(F_Start, F_Stop: integer): longint;
+      function GetSign: integer;
    end;  
 
    { Register types: main register, index, jump. }
@@ -164,7 +165,11 @@ function TMIXWord.Check: boolean;
 var 
    I: integer;
 begin
-   { Sanity check: all bytes of a word must have values < MIXBase }
+   { 
+      Sanity check: all bytes of a word must have values < MIXBase.
+      
+      To do: it should also be true that sign byte is 0, 1 for all words.
+   }
    Check := true;
    for I := 0 to 5 do
       Check := Check and (ByteVal[I] < MIXBase);
@@ -200,6 +205,18 @@ begin
       Multiplier := Multiplier*MIXBase; 
    end;
    GetValue := Sign*GetValue;
+end;
+
+function TMIXWord.GetSign: integer;
+begin
+   { 
+      Return 1 if sign byte = 0, -1 if sign byte = -1.
+   }
+   assert((ByteVal[0] = 0) or (ByteVal[0] = 1), 'TMIXWord.GetSign: bad sign byte.');
+   if ByteVal[0] = 0 then
+      GetSign := 1
+   else
+      GetSign := -1;
 end;
 
 { TMIXRegister... }
@@ -625,6 +642,31 @@ begin
    ba := V mod MIXBase;
 end;
 
+function BytesToValueExtended(A, X: TMIXWord): int64;
+var
+   Res: int64 = 0;  { Short name for the result returned by this function. }
+   M: int64 = 1;    { Multiplier. }
+   I: integer;
+begin 
+   {
+      Take the 10 bytes (usually taken from rA,rX) and build a 64-bit 
+      positive integer value out of it.
+   }
+   for I := 5 downto 1 do
+   begin
+      Res := Res + X.ByteVal[I]*M; 
+      M := M*MIXBase; 
+   end;
+   for I := 5 downto 1 do
+   begin
+      Res := Res + A.ByteVal[I]*M; 
+      M := M*MIXBase; 
+   end;
+   BytesToValueExtended := Res;
+end;
+
+
+
 
 
 
@@ -633,9 +675,9 @@ var
    Address: integer;
    Start: integer;
    Stop: integer;
-   ATemp: int64;  { Temporary arithmetic variables. }
+   ATemp, AX, V: int64;  { Temporary arithmetic variables. }
    MIXMaxInteger: longint;
-   SignByte, ba, bb, bc, bd, be: TMIXByte;
+   SignByte, rA_SignByte, ba, bb, bc, bd, be: TMIXByte;
    xa, xb, xc, xd, xe: TMIXByte;
 begin
    MIXMaxInteger := MIXBase**5 - 1;
@@ -859,7 +901,11 @@ begin
          int64         => 9223372036854775807
          MIXBase**10-1 => 1152921504606846975
         
-         We are very lucky that it does fit.
+         We are very lucky that it does fit. However, if MIXBase 
+         was just a bit bigger, this would no longer be true.
+         Perhaps a robust solution would be to use big-ints 
+         to do the arithmetic. Or to hand-code the multiplication
+         of bytes.
 
          A slightly better approach. We get the unsigned integer
          values of field (1:5) of rA and Cell and multiply, 
@@ -877,7 +923,7 @@ begin
       Start := Instruction.Modifier div 8;
       Stop := Instruction.Modifier mod 8;
 
-      { be careful with this... what if Start <> 0? }
+      SignByte := 0;
       if Start = 0 then 
       begin
          SignByte := Memory.Cell[Address].ByteVal[0];
@@ -898,7 +944,57 @@ begin
       rX.Refill(SignByte, xa, xb, xc, xd, xe);
    end;
 
+   { DIV }
+   4:
+   begin
+      {
+         Euclidean division.
 
+         rA,rX is a 10 byte number with least significant bytes
+         in rX. We divide this by the value V of the field in the 
+         memory cell. V is thus the divisor. As in the comment above,
+         this needs to be made more robust by using bigints.
+
+         if V = 0 then we leave undefined bytes in rA, rX and set
+         OT = ON. In our case we can clear rA,rX but the progammer
+         cannot rely on this because the behavior is actually undefined.
+
+         If abs(rA) >= abs(V) then do same, because this will lead
+         to a quotient that cannot fit in rA.
+
+         Otherwise:
+            rA <- value(rA,rX) div V
+            rX <= value(rA,rX) mod V.
+
+         The sign of rA becomes the sign of value(rA,rX)/V,
+         while the sign of rX becomes the previous sign of rA.
+      }
+      Address := GetIndexedAddress(Instruction);
+      Start := Instruction.Modifier div 8;
+      Stop := Instruction.Modifier mod 8;
+      V := Memory.Cell[Address].GetValue(Start, Stop);
+
+      if (V = 0) or (rA.GetValue(1,5) >= abs(V)) then
+      begin
+         rA.Clear;
+         rX.Clear;
+         OT := ON;
+      end
+      else  
+      begin
+         rA_SignByte := rA.ByteVal[0];  { Save the sign byte of rA. }
+         if rA.GetSign*V > 0 then
+            SignByte := 0
+         else
+            SignByte := 1;
+         AX := BytesToValueExtended(rA, rX); 
+         { Put rA <- AX div abs(V), rX <- AX mod abs(V). }
+         ValueToBytes(AX div abs(V), ba, bb, bc, bd, be);
+         rA.Refill(SignByte, ba, bb, bc, bd, be);
+         ValueToBytes(AX mod abs(V), ba, bb, bc, bd, be);
+         rX.Refill(rA_SignByte, ba, bb, bc, bd, be);
+      end;
+   end;
 
 
 
