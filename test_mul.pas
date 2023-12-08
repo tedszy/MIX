@@ -111,9 +111,6 @@ begin
    writeln;
 end;
 
-
-
-
 procedure Test_DIV2;
 var 
    Address: integer = 1000;
@@ -143,6 +140,90 @@ end;
 
 
 
+procedure Test_DIV_Overflow;
+var 
+   Address: integer = 1000;
+   Width: integer = 25;
+begin
+   {
+      Testing overflows.
+
+      When |rA| >= |V|, the quotient |rA| div |V| cannot fit into five bytes.
+      Observe:
+
+      Ten byte contents of (rA,rX):
+         (rA,rX) = [0; 0; 28; 4; 33 | 58; 11; 52; 52; 63] = 123456589876543
+         rA      = [0; 0; 28; 4; 33]                      = 114977
+      Let's choose a V such that |rA| < |V| and perform the division.
+         V             = [28; 4; 34]          = 114978
+         (rA,rX) div V = [63; 63; 63; 50; 47] = 1073740975
+         (rA,rX) mod V = [12; 60; 1]          = 52993
+      The quotient fits into five bytes. But if we make V smaller,
+      so that |rA| >= |V|,
+         V             = [28;4;33]           = 114977
+         (rA,rX) div V = [1; 0; 0; 2; 4; 42] = 1073750314
+         (rA,rX) mod V = [5; 51; 21]         = 23765
+      and the quotient (div) is six bytes and cannot fit back in to rA.
+
+      Thus in this case we have to signal an overflow, 
+      just as in the divide-by-zero case.
+   }
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 0, 0, 28, 4, 33);
+   Knuth.rX.Refill(0, 58, 11, 52, 52, 63);
+   Knuth.PokeBytes(0, 0, 0, 28, 4, 34, Address);
+   writeln(format('test: DIV overflow %d ...', [1]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('rX contents => ':Width, Knuth.rX.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 0*8 + 5, 4);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   Expected_rA.Refill(0, 63, 63, 63, 50, 47);
+   Expected_rX.Refill(0, 0, 0, 12, 60, 1);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)));
+   writeln;
+
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 0, 0, 28, 4, 33);
+   Knuth.rX.Refill(0, 58, 11, 52, 52, 63);
+   Knuth.PokeBytes(0, 0, 0, 28, 4, 33, Address);
+   writeln(format('test: DIV overflow %d ...', [2]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('rX contents => ':Width, Knuth.rX.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 0*8 + 5, 4);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   Expected_rA.Refill(0, 0, 0, 0, 0, 0);
+   Expected_rX.Refill(0, 0, 0, 0, 0, 0);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)
+                                    and (Knuth.OT = ON)));
+   writeln;
+
+   Knuth.Reboot;
+   Knuth.rA.Refill(0, 0, 0, 28, 4, 33);
+   Knuth.rX.Refill(0, 58, 11, 52, 52, 63);
+   Knuth.PokeBytes(0, 0, 0, 0, 0, 0, Address);
+   writeln(format('test: DIV overflow %d ...', [3]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('rX contents => ':Width, Knuth.rX.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 0*8 + 5, 4);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   Expected_rA.Refill(0, 0, 0, 0, 0, 0);
+   Expected_rX.Refill(0, 0, 0, 0, 0, 0);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)
+                                    and (Knuth.OT = ON)));
+   writeln;
+end;
 
 (* Main. *)
 
@@ -157,6 +238,7 @@ begin
    Test_MUL3;
    Test_DIV1;
    Test_DIV2;
+   Test_DIV_Overflow;
 
    ReportTests;
 
