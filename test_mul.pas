@@ -89,7 +89,7 @@ procedure Test_DIV1;
 var 
    Address: integer = 1000;
    Width: integer = 25;
-   TestNo: integer = 3;
+   TestNo: integer = 1;
 begin
    Knuth.Reboot;
    Knuth.rA.Refill(0, 0, 0, 0, 0, 0);
@@ -114,6 +114,35 @@ end;
 
 
 
+procedure Test_DIV2;
+var 
+   Address: integer = 1000;
+   Width: integer = 25;
+   TestNo: integer = 2;
+begin
+   Knuth.Reboot;
+   Knuth.rA.Refill(1, 0, 0, 0, 0, 0);
+
+   Knuth.rX.Refill(0, 1235 div MIXBase, 1235 mod MIXBase, 0, 3, 1);
+   Knuth.PokeBytes(1, 0, 0, 0, 2, 0, Address);
+   writeln(format('test: DIV %d ...', [TestNo]));
+   writeln('rA contents => ':Width, Knuth.rA.ToString);
+   writeln('rX contents => ':Width, Knuth.rX.ToString);
+   writeln('cell contents => ':Width, Knuth.Peek(Address).ToString);
+
+   Instruction.Refill(0, Address div MIXBase, Address mod MIXBase, 0, 0*8 + 5, 4);
+   Knuth.execute(Instruction);
+   writeln('result rA contents => ':Width, Knuth.rA.ToString);
+   writeln('result rX contents => ':width, Knuth.rX.ToString);
+   Expected_rA.Refill(0, 0, 617 div MIXBase, 617 mod MIXBase, 32, 1);
+   Expected_rX.Refill(1, 0, 0, 0, 1, 1);
+   writeln('==> ', RecordTestResult(EqualWords(Knuth.rA, Expected_rA) 
+                                    and EqualWords(Knuth.rX, Expected_rX)));
+   writeln;
+end;
+
+
+
 
 (* Main. *)
 
@@ -127,6 +156,7 @@ begin
    Test_MUL2;
    Test_MUL3;
    Test_DIV1;
+   Test_DIV2;
 
    ReportTests;
 
