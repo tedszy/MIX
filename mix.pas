@@ -49,7 +49,6 @@ type
       function Check: boolean; override;
       procedure Negate;
    end;  
-   
 
    TMIXIndexRegister = class(TMIXRegister)
    public
@@ -84,6 +83,7 @@ type
       Modifier: integer;
       Index: integer;
       Address: integer;
+      SignByte: TMIXByte;
       procedure Refill(a, b, c, d, e, f: TMIXByte);
       constructor Create;
       constructor CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
@@ -407,11 +407,10 @@ begin
    Modifier := 0;
    Index := 0;
    Address := 0;
+   SignByte := 0;
 end;
 
 constructor TMIXInstruction.CreateFromWord(W: TMIXWord);
-var
-   Sign: byte;
 begin
    {
       We deconstruct MIX words to create instructions.
@@ -426,6 +425,9 @@ begin
       F = modifier
       I = index
       (+-AA) = combined 3 bytes = Address
+      
+      SignByte keeps +- as 0,1 to distinguish +0 from -0.
+      This is used for some opcodes (Enter).
 
       We leave it to other procedures to interpret the meaning
       of index and modifier for particular opcodes.
@@ -434,9 +436,9 @@ begin
    Modifier := W.ByteVal[4];
    Index := W.ByteVal[3];
    Address := W.ByteVal[1]*MIXBase + W.ByteVal[2];
-   Sign := W.ByteVal[0];
-   Assert((Sign = 0) or (Sign = 1), 'TMIXInstruction.Create:: bad sign byte.');
-   if Sign = 1 then Address := -Address;
+   SignByte := W.ByteVal[0];
+   Assert((SignByte = 0) or (SignByte = 1), 'TMIXInstruction.Create:: bad sign byte.');
+   if SignByte = 1 then Address := -Address;
 end;
 
 constructor TMIXInstruction.CreateFromBytes(a, b, c, d, e, f: TMIXByte); 
@@ -445,8 +447,6 @@ begin
 end;
 
 procedure TMIXInstruction.Refill(a, b, c, d, e, f: TMIXByte);
-var
-   Sign: integer;
 begin
    {
       a    b    c    d    e    f
@@ -458,9 +458,9 @@ begin
    Modifier := e;
    Index := d;
    Address := b*MIXBase + c;
-   Sign := a;
-   Assert((Sign = 0) or (Sign = 1), 'TMIXInstruction.Refill:: bad sign byte.');
-   if Sign = 1 then Address := -Address;
+   SignByte := a;
+   Assert((SignByte = 0) or (SignByte = 1), 'TMIXInstruction.Refill:: bad sign byte.');
+   if SignByte = 1 then Address := -Address;
 end;
 
 destructor TMIXInstruction.Destroy;
@@ -664,11 +664,6 @@ begin
    end;
    BytesToValueExtended := Res;
 end;
-
-
-
-
-
 
 procedure TMIX.Execute(Instruction: TMIXInstruction);
 var
@@ -996,7 +991,34 @@ begin
       end;
    end;
 
+   { ENTER A }
+   48:
+   begin
+      case Instruction.Modifier of
 
+      { ENTA }
+      2:
+      begin
+         {
+            Let M be the indexed address. Compute M and use it as
+            a number to load into rA.
+
+            With the rule that if M=0 then load Instruction.SignByte.
+         }
+
+
+
+      end;
+
+      { ENNA }
+      3:
+      begin
+      end;
+
+      else
+         writeln('Bad ENTER A modifier.');
+      end;  
+   end;
 
 
 
