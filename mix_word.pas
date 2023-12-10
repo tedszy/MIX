@@ -1,7 +1,7 @@
 {$mode objfpc}{$R+}{$H+}{$ASSERTIONS+}
 
 {
-   New MIX word objects will have more abilities.
+   The new MIX word objects have more abilities.
 } 
 
 unit mix_word;
@@ -14,7 +14,7 @@ uses
    Math, SysUtils;
 
 const
-   MIXBase: byte = 64;           { 84 <= MIXBase <= 100. } 
+   MIXBase: byte = 64;           { 64 <= MIXBase <= 100. } 
 
 type   
    TMIXSign = byte;              { May want enumerated type here. }
@@ -36,6 +36,7 @@ type
       procedure Clear;
       function GetSign: integer;
       procedure SetSign(V: int64);
+      procedure SetBytes(a, b, c, d, e, f: byte);
       function GetFieldValue(Start, Stop: integer): int64;
       procedure SetField(V: int64; Start, Stop: integer);
       function ToString: string; override;
@@ -62,12 +63,7 @@ end;
 
 constructor TMIXWord.Create(a, b, c, d, e, f: byte);
 begin
-   Sign := a;
-   Data[1] := b;
-   Data[2] := c;
-   Data[3] := d;
-   Data[4] := e;
-   Data[5] := f;
+   SetBytes(a, b, c, d, e, f);
 end;  
 
 constructor TMIXWord.Create(BW: TByteWord);
@@ -78,10 +74,6 @@ begin
    for I := low(Data) to high(Data) do 
       Data[I] := BW[I];
 end;
-
-
-
-
 
 constructor TMIXWord.Create(Ps: array of TPack); 
 var
@@ -120,6 +112,16 @@ procedure TMIXWord.SetSign(V: int64);
 begin
    { Sets the sign byte of word to the sign of V. }
    if V >= 0 then Sign := 0 else Sign := 1; 
+end;
+
+procedure TMIXWord.SetBytes(a, b, c, d, e, f: byte);
+begin
+   Sign := a;
+   Data[1] := b;
+   Data[2] := c;
+   Data[3] := d;
+   Data[4] := e;
+   Data[5] := f;
 end;
 
 function TMIXWord.GetFieldValue(Start, Stop: integer): int64;
