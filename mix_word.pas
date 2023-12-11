@@ -37,8 +37,10 @@ type
       function GetSign: integer;
       procedure SetSign(V: int64);
       procedure SetBytes(a, b, c, d, e, f: byte);
+      procedure SetPacked(Ps: array of TPack);
       function GetFieldValue(Start, Stop: integer): int64;
       procedure SetField(V: int64; Start, Stop: integer);
+      procedure Negate;
       function ToString: string; override;
       function ToString(Ns: array of integer): string; overload;
       function IsValid: boolean;
@@ -47,7 +49,7 @@ type
 var
    MIXMaxInt: int64;
 
-function PackV(V: int64; N: integer): TPack;
+function PV(V: int64; N: integer): TPack;
 
 (**********)
 
@@ -76,23 +78,8 @@ begin
 end;
 
 constructor TMIXWord.Create(Ps: array of TPack); 
-var
-   J, Start, Stop: integer;
 begin
-   {
-      An open array of TPack objects build up the fields of the word.
-      Only the first of these TPack objects can be negative. Check this.
-   }
-   Start := 0;
-   for J := low(Ps) to high(Ps) do
-   begin
-      if J > low(Ps) then
-         assert(Ps[J].V >= 0, 
-            'TMIXWord.Create: non-initial TPack has negative value.'); 
-      Stop := Start + Ps[J].N - 1;
-      SetField(Ps[J].V, Start, Stop);
-      Start := Stop + 1;
-   end;
+   SetPacked(Ps);
 end;
 
 procedure TMIXWord.Clear;
@@ -122,6 +109,26 @@ begin
    Data[3] := d;
    Data[4] := e;
    Data[5] := f;
+end;
+
+procedure TMIXWord.SetPacked(Ps: array of TPack);
+var
+   J, Start, Stop: integer;
+begin
+   {
+      An open array of TPack objects build up the fields of the word.
+      Only the first of these TPack objects can be negative. Check this.
+   }
+   Start := 0;
+   for J := low(Ps) to high(Ps) do
+   begin
+      if J > low(Ps) then
+         assert(Ps[J].V >= 0, 
+            'TMIXWord.Create: non-initial TPack has negative value.'); 
+      Stop := Start + Ps[J].N - 1;
+      SetField(Ps[J].V, Start, Stop);
+      Start := Stop + 1;
+   end;
 end;
 
 function TMIXWord.GetFieldValue(Start, Stop: integer): int64;
@@ -182,13 +189,18 @@ begin
    end
    else  
    begin
-      assert(V > 0, 'TMIXWord.SetFieldValue: negative value in non-initial field.'); 
+      assert(V >= 0, 'TMIXWord.SetFieldValue: negative value in non-initial field.'); 
       for I := Stop downto Start do
       begin
          Data[I] := V mod MIXBase;   
          V := V div MIXBase;
       end;
    end;
+end;
+
+procedure TMIXWord.Negate;
+begin
+   if Sign = 0 then Sign := 1 else Sign := 0;
 end;
 
 function TMIXWord.ToString: string; 
@@ -234,13 +246,13 @@ begin
    IsValid := IsValid and ((Sign = 0) or (Sign = 1));
 end;
 
-function PackV(V: int64; N: integer): TPack;
+function PV(V: int64; N: integer): TPack;
 begin
    {
-      We need a short name for this, hence PackV rather than PackValue.
+      We need a short name for this, hence PV rather than PackValue.
    }
-   PackV.V := V;
-   PackV.N := N;
+   PV.V := V;
+   PV.N := N;
 end;
 
 (**********)

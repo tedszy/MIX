@@ -12,6 +12,9 @@ test_load
 test_store
 test_add
 test_mul
+test_ato
+test_mix_word
+
 
 
 

@@ -33,6 +33,12 @@ type
       destructor Destroy; override;
       procedure Clear;
       procedure Show(Address: integer = 0; Rows: integer = 5);
+      procedure Inst_LDA(Address: integer; Index, Modifier: byte);
+      procedure Inst_LDX(Address: integer; Index, Modifier: byte);
+      procedure Inst_LDAN(Address: integer; Index, Modifier: byte);
+      procedure Inst_LDXN(Address: integer; Index, Modifier: byte);
+      procedure Inst_LDi(RegI, Address: integer; Index, Modifier: byte); 
+      procedure Inst_LDiN(RegI, Address: integer; Index, Modifier: byte); 
    end;  
 
 (**********)
@@ -79,7 +85,6 @@ end;
 
 procedure TMIX.Show(Address, Rows: integer);
 var
-   Temp: string;
    Width: integer = 25;
    I: integer;
 begin
@@ -114,11 +119,79 @@ begin
    end;
 end;
 
+procedure TMIX.Inst_LDA(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+begin
+   rA.Clear;
+   if Index >= 1 then
+      Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      When Start = Stop = 0, then only the sign is loaded as + or -1,
+      but this becomes an actual value loaded into rA as the number +1 or -1.
+      So we have to be careful here to only load the sign, as Knuth requires.
+   }
+   if (Start = 0) and (Stop = 0) then
+      rA.SetSign(Cell[Address].GetSign)
+   else
+      rA.SetField(Cell[Address].GetFieldValue(Start, Stop), 0, 5);
+end;
 
+procedure TMIX.Inst_LDX(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+begin
+   rX.Clear;
+   if Index >= 1 then
+      Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      See comment above in LDA.
+   }
+   if (Start = 0) and (Stop = 0) then
+      rX.SetSign(Cell[Address].GetSign)
+   else
+      rX.SetField(Cell[Address].GetFieldValue(Start, Stop), 0, 5);
+end;
 
+procedure TMIX.Inst_LDAN(Address: integer; Index, Modifier: byte);
+begin
+   Inst_LDA(Address, Index, Modifier);
+   rA.Negate;
+end;
 
+procedure TMIX.Inst_LDXN(Address: integer; Index, Modifier: byte);
+begin
+   Inst_LDX(Address, Index, Modifier);
+   rX.Negate;
+end;
 
+procedure TMIX.Inst_LDi(RegI, Address: integer; Index, Modifier: byte); 
+var
+   Start, Stop: integer;
+begin
+   rI[RegI].Clear;
+   if Index >= 1 then
+      Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      See comment above in LDA.
+   }
+   if (Start = 0) and (Stop = 0) then
+      rI[RegI].SetSign(Cell[Address].GetSign)
+   else
+      rI[RegI].SetField(Cell[Address].GetFieldValue(Start, Stop), 0, 5);
+end;
 
+procedure TMIX.Inst_LDiN(RegI, Address: integer; Index, Modifier: byte); 
+begin
+   Inst_LDi(RegI, Address, Index, Modifier); 
+   rI[RegI].Negate;
+end;
 
 
 
