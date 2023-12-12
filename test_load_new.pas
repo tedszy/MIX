@@ -646,8 +646,6 @@ begin
    Test_LDX_Indexed;
    Test_LDi_Indexed;
 
-
-
    ReportTests;
 
    Expected.Free;

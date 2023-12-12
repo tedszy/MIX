@@ -39,6 +39,11 @@ type
       procedure Inst_LDXN(Address: integer; Index, Modifier: byte);
       procedure Inst_LDi(RegI, Address: integer; Index, Modifier: byte); 
       procedure Inst_LDiN(RegI, Address: integer; Index, Modifier: byte); 
+      procedure Inst_STA(Address: integer; Index, Modifier: byte);
+      procedure Inst_STX(Address: integer; Index, Modifier: byte);
+      procedure Inst_STI(RegI, Address: integer; Index, Modifier: byte); 
+      procedure Inst_STJ(Address: integer; Index, Modifier: byte);
+      procedure Inst_STZ(Address: integer; Index, Modifier: byte);
    end;  
 
 (**********)
@@ -192,6 +197,126 @@ begin
    Inst_LDi(RegI, Address, Index, Modifier); 
    rI[RegI].Negate;
 end;
+
+procedure TMIX.Inst_STA(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop, NBytes: integer;
+   rA_Value: int64;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   { Figure out the number of bytes we will take from right side of rA. } 
+   NBytes := Stop - Start + 1;
+   { 
+      What happens if rA is -0 and all of it is stored into a cell?
+      There is a loss of sign information when bytes are converted into 
+      the value 0. So this case should be handled (and tested) seperately. 
+   
+      If rA_Value = 0 and field is (0:5) then we must consider 
+      the sign byte of rA.
+   }
+   rA_Value := rA.GetFieldValue(high(rA.Data) - NBytes + 1, high(rA.Data));
+   if (rA_Value = 0) and (Start = 0) and (Stop = high(rA.Data)) then
+   begin
+      Cell[Address].Clear;
+      Cell[Address].SetSignByte(rA.Sign);
+   end
+   else
+      Cell[Address].SetField(rA_Value, Start, Stop);
+   {
+      We are also making an assumption that Knuth may or may not intend.
+
+      When the field is, say (0:1) or (0:2), then we are storing
+      the low bytes of rA which does not include the sign byte.
+      The value we are storing into (0:1) or (0:2) will thus be always
+      positive and will set the sign byte of the Cell to +.
+
+      However when the field is the full (0:5), then the value extracted
+      from rA to be stored in (0:5) of the cell can be either + or -.
+   }
+end;
+
+procedure TMIX.Inst_STX(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop, NBytes: integer;
+   rX_Value: int64;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   { Figure out the number of bytes we will take from right side of rA. } 
+   NBytes := Stop - Start + 1;
+   { 
+      STA comments above apply here.
+   }
+   rX_Value := rX.GetFieldValue(high(rX.Data) - NBytes + 1, high(rX.Data));
+   if (rX_Value = 0) and (Start = 0) and (Stop = high(rX.Data)) then
+   begin
+      Cell[Address].Clear;
+      Cell[Address].SetSignByte(rX.Sign);
+   end
+   else
+      Cell[Address].SetField(rX_Value, Start, Stop);
+end;
+
+procedure TMIX.Inst_STI(RegI, Address: integer; Index, Modifier: byte); 
+var
+   Start, Stop, NBytes, data_hi: integer;
+   rI_Value: int64;
+begin
+   data_hi := high(rI[RegI].Data);
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   { Figure out the number of bytes we will take from right side of rA. } 
+   NBytes := Stop - Start + 1;
+   { 
+      STA comments above apply here.
+   }
+   rI_Value := rI[RegI].GetFieldValue(data_hi - NBytes + 1, data_hi);
+   if (rI_Value = 0) and (Start = 0) and (Stop = data_hi) then
+   begin
+      Cell[Address].Clear;
+      Cell[Address].SetSignByte(rI[RegI].Sign);
+   end
+   else
+      Cell[Address].SetField(rI_Value, Start, Stop);
+end;
+
+procedure TMIX.Inst_STJ(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop, NBytes, data_hi: integer;
+   rJ_Value: int64;
+begin
+   data_hi := high(rJ.Data);
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   NBytes := Stop - Start + 1;
+   { 
+      STA comments above apply here.
+   }
+   rJ_Value := rJ.GetFieldValue(data_hi - NBytes + 1, data_hi);
+   if (rJ_Value = 0) and (Start = 0) and (Stop = data_hi) then
+   begin
+      Cell[Address].Clear;
+      Cell[Address].SetSignByte(rJ.Sign);
+   end
+   else
+      Cell[Address].SetField(rJ_Value, Start, Stop);
+end;
+
+procedure TMIX.Inst_STZ(Address: integer; Index, Modifier: byte);
+begin
+   rA.Clear;
+   Inst_STA(Address, Index, Modifier);
+end;
+
+
+
+
+
 
 
 

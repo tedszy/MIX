@@ -17,7 +17,6 @@ const
    MIXBase: byte = 64;           { 64 <= MIXBase <= 100. } 
 
 type   
-   TMIXSign = byte;              { May want enumerated type here. }
    TByteWord = array[0..5] of byte;
 
    TPack = record
@@ -27,7 +26,7 @@ type
 
    TMIXWord = class
    public
-      Sign: TMIXSign;
+      Sign: byte;
       Data: array[1..5] of byte;
       constructor Create;
       constructor Create(a, b, c, d, e, f: byte); overload;
@@ -37,6 +36,7 @@ type
       function GetSign: integer;
       procedure SetSign(V: int64);
       procedure SetBytes(a, b, c, d, e, f: byte);
+      procedure SetSignByte(a: byte);
       procedure SetPacked(Ps: array of TPack);
       function GetFieldValue(Start, Stop: integer): int64;
       procedure SetField(V: int64; Start, Stop: integer);
@@ -109,6 +109,12 @@ begin
    Data[3] := d;
    Data[4] := e;
    Data[5] := f;
+end;
+
+procedure TMIXWord.SetSignByte(a: byte);
+begin
+   assert((a = 0) or (a = 1), 'TMIXWord.SetSignByte: bad sign byte argument.');
+   Sign := a;
 end;
 
 procedure TMIXWord.SetPacked(Ps: array of TPack);
