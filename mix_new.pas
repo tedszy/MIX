@@ -44,6 +44,8 @@ type
       procedure Inst_STI(RegI, Address: integer; Index, Modifier: byte); 
       procedure Inst_STJ(Address: integer; Index, Modifier: byte);
       procedure Inst_STZ(Address: integer; Index, Modifier: byte);
+      procedure Inst_ADD(Address: integer; Index, Modifier: byte);
+      procedure Inst_SUB(Address: integer; Index, Modifier: byte);
    end;  
 
 (**********)
@@ -313,11 +315,66 @@ begin
    Inst_STA(Address, Index, Modifier);
 end;
 
+procedure TMIX.Inst_ADD(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   V, ResultSum: int64;
+   rA_SignByte: byte;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   { 
+      Rule out the case of Start = Stop = 0. 
+      It makes no sense to add only the sign.
+   }
+   assert(not ((Start = 0) and (Stop = 0)), 'TMIX.Inst_ADD: unreasonable field (0:0).');
+   V := Cell[Address].GetFieldValue(Start, Stop);
+   ResultSum := rA.GetFieldValue(0, 5) + V;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rA.SetPacked([PV(ResultSum, 6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rA_SignByte := rA.Sign;
+      rA.Clear;
+      rA.SetSignByte(rA_SignByte);
+   end
+   else 
+      rA.SetPacked([PV(ResultSum, 6)]);
+end;
 
-
-
-
-
+procedure TMIX.Inst_SUB(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   V, ResultSum: int64;
+   rA_SignByte: byte;
+begin
+   {
+      It's too bad we have to duplicate all this code just to change V -> -V.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   assert(not ((Start = 0) and (Stop = 0)), 'TMIX.Inst_ADD: unreasonable field (0:0).');
+   V := Cell[Address].GetFieldValue(Start, Stop);
+   ResultSum := rA.GetFieldValue(0, 5) - V;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rA.SetPacked([PV(ResultSum, 6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rA_SignByte := rA.Sign;
+      rA.Clear;
+      rA.SetSignByte(rA_SignByte);
+   end
+   else 
+      rA.SetPacked([PV(ResultSum, 6)]);
+end;
 
 
 
