@@ -1,5 +1,9 @@
 {$mode objfpc}{$R+}{$H+}
 
+{
+   Test ADD, SUB.
+}
+
 program test_arithmetic1;
 
 uses

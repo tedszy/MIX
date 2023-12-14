@@ -48,6 +48,7 @@ type
 
 var
    MIXMaxInt: int64;
+   MIXMaxIntExtended: int64;
 
 function PV(V: int64; N: integer): TPack;
 
@@ -266,5 +267,6 @@ end;
 initialization
 
    MIXMaxInt := MIXBase**5 - 1;
+   MIXMaxIntExtended := MIXBase**10 - 1;
 
 end.

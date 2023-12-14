@@ -46,6 +46,8 @@ type
       procedure Inst_STZ(Address: integer; Index, Modifier: byte);
       procedure Inst_ADD(Address: integer; Index, Modifier: byte);
       procedure Inst_SUB(Address: integer; Index, Modifier: byte);
+      procedure Inst_MUL(Address: integer; Index, Modifier: byte);
+      procedure Inst_DIV(Address: integer; Index, Modifier: byte);
    end;  
 
 (**********)
@@ -375,6 +377,113 @@ begin
    else 
       rA.SetPacked([PV(ResultSum, 6)]);
 end;
+
+procedure TMIX.Inst_MUL(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   V, ResultMul: int64;
+   V_Sign, rA_Sign: byte;
+begin
+   {
+         Before proceeding we should check if a 10-byte MIX integer
+         fits into a Pascal int64.
+
+         int64         => 9223372036854775807
+         MIXBase**10-1 => 1152921504606846975
+        
+         We are very lucky that it does fit. But if MIXBase was just
+         a bit bigger, it would not.
+
+         To do: use bigints to remove this potential problem.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   assert(not ((Start = 0) and (Stop = 0)), 'TMIX.Inst_MUL: unreasonable field (0:0).');
+   {
+      It is a little more reasonable to imagine that multiplication by 
+      mere sign + or - should act like multiplication by -1 or +1. 
+      But for now we will exclude a field modifier of (0:0) for multiplication.;
+   }
+   { Fix sign of rA, rX, especially when they are 0. }
+   V := Cell[Address].GetFieldValue(Start, Stop);
+   rA_Sign := rA.Sign;
+   if Start = 0 then
+      V_Sign := Cell[Address].Sign
+   else
+      V_Sign := 0;
+   ResultMul := rA.GetFieldValue(0, 5) * V;
+   rX.SetField(ResultMul, 0, 5);
+   rA.SetField(ResultMul div (MIXMaxInt + 1), 0, 5);
+   if rA_Sign = V_Sign then
+   begin
+      rA.Sign := 0;
+      rX.Sign := 0;
+   end
+   else
+   begin
+      rA.Sign := 1;
+      rX.Sign := 1;
+   end;
+end;
+
+procedure TMIX.Inst_DIV(Address: integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   V, rAX_number: int64;
+   V_Sign, rA_PrevSign: byte;
+begin
+   {
+      Euclidean division.
+
+      rA,rX is a 10 byte number with least significant bytes
+      in rX. We divide this by V, the value of the field in the 
+      memory cell. 
+
+      if V = 0 then we leave undefined bytes in rA, rX and set
+      OT = ON. In our case we can clear rA,rX but the progammer
+      cannot rely on this because the behavior is supposed
+      to be undefined.
+
+      If abs(rA) >= abs(V) then do same, because this will lead
+      to a quotient that cannot fit in rA.
+
+      Otherwise:
+         rA <- value(rA,rX) div V
+         rX <= value(rA,rX) mod V.
+
+      The sign of rA becomes the sign of value(rA,rX)/V,
+      while the sign of rX becomes the previous sign of rA.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   assert(not ((Start = 0) and (Stop = 0)), 'TMIX.Inst_DIV: unreasonable field (0:0).');
+   rA_PrevSign := rA.Sign;
+   if Start = 0 then
+      V_Sign := Cell[Address].Sign
+   else
+      V_Sign := 0;
+   V := abs(Cell[Address].GetFieldValue(Start, Stop));
+   if ((V = 0) or (rA.GetFieldValue(1,5) >= V)) then
+   begin
+      rA.Clear;
+      rX.Clear;
+      OT := ON;
+   end
+   else
+   begin
+      rAX_number := rA.GetFieldValue(1,5)*(MIXMaxInt+1) + rX.GetFieldValue(1,5);
+      rA.SetField(rAX_number div V, 1, 5);
+      rX.SetField(rAX_number mod V, 1, 5);
+      if rA_PrevSign = V_Sign then
+         rA.Sign := 0
+      else
+         rA.Sign := 1;
+      rX.Sign := rA_PrevSign;
+   end;
+end;
+
 
 
 
