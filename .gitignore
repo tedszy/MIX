@@ -12,6 +12,7 @@ test_load
 test_store
 test_arithmetic1
 test_arithmetic2
+test_arithmetic3
 
 
 
