@@ -10,12 +10,6 @@
 
 test_load
 test_store
-test_add
-test_mul
-test_ato
-test_mix_word
-test_load_new
-test_store_new
 test_arithmetic1
 test_arithmetic2
 

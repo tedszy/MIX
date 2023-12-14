@@ -7,7 +7,7 @@
 program test_arithmetic1;
 
 uses
-   mix_word, mix_new, testing_new, SysUtils;
+   mix_word, mix, testing, SysUtils;
 
 var
    Knuth: TMIX;

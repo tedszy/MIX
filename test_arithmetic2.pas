@@ -7,7 +7,7 @@
 program test_arithmetic2;
 
 uses
-   mix_word, mix_new, testing_new;
+   mix_word, mix, testing;
 
 var
    Knuth: TMIX;

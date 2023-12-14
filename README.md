@@ -4,4 +4,3 @@ Simulator for Knuth's MIX machine. The Art of Computer Programming
 
 ## MIX words
 
-Refactoring in progress...
