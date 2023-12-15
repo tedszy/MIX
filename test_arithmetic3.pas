@@ -1,6 +1,6 @@
 {$mode objfpc}{$R+}{$H+}
 
-program test_arithmetic1;
+program test_arithmetic3;
 
 uses
    mix_word, mix, testing;
