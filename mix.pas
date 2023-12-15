@@ -56,6 +56,12 @@ type
       procedure Inst_SUB(Address: integer; Index, Modifier: byte);
       procedure Inst_MUL(Address: integer; Index, Modifier: byte);
       procedure Inst_DIV(Address: integer; Index, Modifier: byte);
+      procedure Inst_ENTA(Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_ENTX(Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_ENTi(RegI: integer; Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_ENNA(Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_ENNX(Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_ENNi(RegI: integer; Address: integer; Index: byte; InstSign: byte = 0);
    end;  
 
 (**********)
@@ -490,6 +496,68 @@ begin
          rA.Sign := 1;
       rX.Sign := rA_PrevSign;
    end;
+end;
+
+procedure TMIX.Inst_ENTA(Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   {
+      If Address = 0, then we must consider Instruction Sign (InstSign)
+      to see if +0 or -0 is meant.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   if Address = 0 then
+   begin
+      rA.Clear;
+      rA.Sign := InstSign;
+   end
+   else
+      rA.SetPacked([PV(Address,6)]);
+end;
+
+procedure TMIX.Inst_ENTX(Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   {
+      If Address = 0, then we must consider Instruction Sign (InstSign)
+      to see if +0 or -0 is meant.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   if Address = 0 then
+   begin
+      rX.Clear;
+      rX.Sign := InstSign;
+   end
+   else
+      rX.SetPacked([PV(Address,6)]);
+end;
+
+procedure TMIX.Inst_ENTi(RegI: integer; Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   if Address = 0 then
+   begin
+      rI[RegI].Clear;
+      rI[RegI].Sign := InstSign;
+   end
+   else
+      rI[RegI].SetPacked([PV(Address,6)]);
+end;
+
+procedure TMIX.Inst_ENNA(Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   Inst_ENTA(Address, Index, InstSign);
+   rA.Negate;
+end;
+
+procedure TMIX.Inst_ENNX(Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   Inst_ENTX(Address, Index, InstSign);
+   rX.Negate;
+end;
+
+procedure TMIX.Inst_ENNi(RegI: integer; Address: integer; Index: byte; InstSign: byte = 0);
+begin
+   Inst_ENTi(RegI, Address, Index, InstSign);
+   rI[RegI].Negate;
 end;
 
 
