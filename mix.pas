@@ -49,7 +49,7 @@ type
       procedure Inst_LDiN(RegI, Address: integer; Index, Modifier: byte); 
       procedure Inst_STA(Address: integer; Index, Modifier: byte);
       procedure Inst_STX(Address: integer; Index, Modifier: byte);
-      procedure Inst_STI(RegI, Address: integer; Index, Modifier: byte); 
+      procedure Inst_STi(RegI, Address: integer; Index, Modifier: byte); 
       procedure Inst_STJ(Address: integer; Index, Modifier: byte);
       procedure Inst_STZ(Address: integer; Index, Modifier: byte);
       procedure Inst_ADD(Address: integer; Index, Modifier: byte);
@@ -62,6 +62,12 @@ type
       procedure Inst_ENNA(Address: integer; Index: byte; InstSign: byte = 0);
       procedure Inst_ENNX(Address: integer; Index: byte; InstSign: byte = 0);
       procedure Inst_ENNi(RegI: integer; Address: integer; Index: byte; InstSign: byte = 0);
+      procedure Inst_INCA(Address: integer; Index: byte);
+      procedure Inst_INCX(Address: integer; Index: byte);
+      procedure Inst_INCi(RegI: integer; Address: integer; Index: byte);
+      procedure Inst_DECA(Address: integer; Index: byte);
+      procedure Inst_DECX(Address: integer; Index: byte);
+      procedure Inst_DECi(RegI: integer; Address: integer; Index: byte);
    end;  
 
 (**********)
@@ -560,6 +566,139 @@ begin
    rI[RegI].Negate;
 end;
 
+procedure TMIX.Inst_INCA(Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rA_SignByte: byte;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rA.GetFieldValue(0, 5) + Address;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rA.SetPacked([PV(ResultSum,6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rA_SignByte := rA.Sign;
+      rA.Clear;
+      rA.Sign := rA_SignByte;
+   end
+   else
+      rA.SetPacked([PV(ResultSum, 6)]);
+end;
+
+procedure TMIX.Inst_INCX(Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rX_SignByte: byte;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rX.GetFieldValue(0, 5) + Address;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rX.SetPacked([PV(ResultSum,6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rX_SignByte := rX.Sign;
+      rX.Clear;
+      rX.Sign := rX_SignByte;
+   end
+   else
+      rX.SetPacked([PV(ResultSum, 6)]);
+end;
+
+procedure TMIX.Inst_INCi(RegI: integer; Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rI_SignByte: byte;
+begin
+   {
+      If abs(ResultSum) cannot fit in two bytes, then it cannot
+      fit into an index register. Assertion error in this case.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rI[RegI].GetFieldValue(0, 5) + Address;
+   assert(abs(ResultSum) <= MIXMaxIndexInt, 
+      'TMIX.Inst_INCi: sum result does not fit in index register.');
+   if ResultSum = 0 then
+   begin 
+      rI_SignByte := rX.Sign;
+      rI[RegI].Clear;
+      rI[RegI].Sign := rI_SignByte;
+   end
+   else
+      rI[RegI].SetPacked([PV(ResultSum, 6)]);
+end;
+
+procedure TMIX.Inst_DECA(Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rA_SignByte: byte;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rA.GetFieldValue(0, 5) - Address;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rA.SetPacked([PV(ResultSum,6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rA_SignByte := rA.Sign;
+      rA.Clear;
+      rA.Sign := rA_SignByte;
+   end
+   else
+      rA.SetPacked([PV(ResultSum, 6)]);
+end;
+
+procedure TMIX.Inst_DECX(Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rX_SignByte: byte;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rX.GetFieldValue(0, 5) - Address;
+   if abs(ResultSum) > MIXMaxInt then 
+   begin
+      OT := ON;
+      rX.SetPacked([PV(ResultSum,6)]);
+   end
+   else if ResultSum = 0 then
+   begin 
+      rX_SignByte := rX.Sign;
+      rX.Clear;
+      rX.Sign := rX_SignByte;
+   end
+   else
+      rX.SetPacked([PV(ResultSum, 6)]);
+end;
+
+procedure TMIX.Inst_DECi(RegI: integer; Address: integer; Index: byte);
+var
+   ResultSum: int64;
+   rI_SignByte: byte;
+begin
+   {
+      If abs(ResultSum) cannot fit in two bytes, then it cannot
+      fit into an index register. Assertion error in this case.
+   }
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   ResultSum := rI[RegI].GetFieldValue(0, 5) - Address;
+   assert(abs(ResultSum) <= MIXMaxIndexInt, 
+      'TMIX.Inst_INCi: sum result does not fit in index register.');
+   if ResultSum = 0 then
+   begin 
+      rI_SignByte := rX.Sign;
+      rI[RegI].Clear;
+      rI[RegI].Sign := rI_SignByte;
+   end
+   else
+      rI[RegI].SetPacked([PV(ResultSum, 6)]);
+end;
 
 
 

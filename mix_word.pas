@@ -48,6 +48,7 @@ type
 
 var
    MIXMaxInt: int64;
+   MIXMaxIndexInt: int64;
    MIXMaxIntExtended: int64;
 
 function PV(V: int64; N: integer): TPack;
@@ -266,7 +267,8 @@ end;
 
 initialization
 
-   MIXMaxInt := MIXBase**5 - 1;
-   MIXMaxIntExtended := MIXBase**10 - 1;
+   MIXMaxInt := MIXBase**5 - 1;           { Max integer that can fit in register. }
+   MIXMaxIndexInt := MIXBase**2 - 1;      { Max integer that fits in index register. }
+   MIXMaxIntExtended := MIXBase**10 - 1;  { Max integer that fits in extended rA,rX. }
 
 end.

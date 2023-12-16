@@ -14,6 +14,9 @@ test_arithmetic1
 test_arithmetic2
 test_arithmetic3
 test_enter
+test_inc_dec
+
+
 
 
 
