@@ -68,6 +68,9 @@ type
       procedure Inst_DECA(Address: integer; Index: byte);
       procedure Inst_DECX(Address: integer; Index: byte);
       procedure Inst_DECi(RegI: integer; Address: integer; Index: byte);
+      procedure Inst_CMPA(Address:integer; Index, Modifier: byte);
+      procedure Inst_CMPX(Address:integer; Index, Modifier: byte);
+      procedure Inst_CMPi(RegI: integer; Address:integer; Index, Modifier: byte);
    end;  
 
 (**********)
@@ -699,6 +702,104 @@ begin
    else
       rI[RegI].SetPacked([PV(ResultSum, 6)]);
 end;
+
+procedure TMIX.Inst_CMPA(Address:integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   rA_val, cell_val: int64;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      rA < memory cell => LESS.
+      rA = memory cell => EQUAL.
+      rA > memory cell => GREATER.
+
+      Start = Stop = 0 is a special case that always gives EQUAL.
+   }
+   if (Start = 0) and (Stop = 0) then
+      CI := EQUAL
+   else 
+   begin
+      rA_val := rA.GetFieldValue(Start, Stop);
+      cell_val := Cell[Address].GetFieldValue(Start, Stop);
+      if rA_Val < cell_Val then
+         CI := LESS
+      else if rA_val = cell_Val then
+         CI := EQUAL
+      else
+         CI := GREATER;
+   end;
+end;
+
+procedure TMIX.Inst_CMPX(Address:integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   rX_val, cell_val: int64;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      rX < memory cell => LESS.
+      rX = memory cell => EQUAL.
+      rX > memory cell => GREATER.
+      Start = Stop = 0 is a special case that always gives EQUAL.
+   }
+   if (Start = 0) and (Stop = 0) then
+      CI := EQUAL
+   else 
+   begin
+      rX_val := rX.GetFieldValue(Start, Stop);
+      cell_val := Cell[Address].GetFieldValue(Start, Stop);
+      if rX_Val < cell_Val then
+         CI := LESS
+      else if rX_Val = cell_Val then
+         CI := EQUAL
+      else
+         CI := GREATER;
+   end;
+end;
+
+procedure TMIX.Inst_CMPi(RegI: integer; Address:integer; Index, Modifier: byte);
+var
+   Start, Stop: integer;
+   rI_val, cell_val: int64;
+   TempWord: TMIXWord;
+begin
+   if Index >= 1 then Address := Address + rI[Index].GetFieldValue(0, 5); 
+   Start := Modifier div 8;
+   Stop := Modifier mod 8;
+   {
+      rX < memory cell => LESS.
+      rX = memory cell => EQUAL.
+      rX > memory cell => GREATER.
+      Start = Stop = 0 is a special case that always gives EQUAL.
+      Here we are comparing with an index register: bytes 1, 2, 3
+      are assumed to be zero. Actually this is evidence that,
+      in Knuth's thinking, index registers can have nonzero values 
+      in those positions, but they are assumed zero when we access them. 
+   }
+   TempWord := TMIXWord.Create(rI[RegI].Sign, 0, 0, 0, rI[RegI].Data[4], rI[RegI].Data[5]);
+   if (Start = 0) and (Stop = 0) then
+      CI := EQUAL
+   else 
+   begin
+      rI_val := TempWord.GetFieldValue(Start, Stop);
+      cell_val := Cell[Address].GetFieldValue(Start, Stop);
+      if rI_Val < cell_Val then
+         CI := LESS
+      else if rI_Val = cell_val then
+         CI := EQUAL
+      else
+         CI := GREATER;
+   end;
+end;
+
+
+
+
 
 
 
